@@ -1,6 +1,9 @@
-import pygame
-import sys
 from scoundrel import Scoundrel, Card
+
+import asyncio
+import pygame
+from pygame_emojis import load_emoji
+import sys
 
 # Initialize pygame
 pygame.init()
@@ -10,6 +13,11 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Scoundrel - Card Dungeon Crawler")
+
+background = pygame.image.load("assets/images/dungeon_background.png").convert_alpha()
+
+# Scale background to fit screen
+background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Colors
 BLACK = (0, 0, 0)
@@ -23,15 +31,25 @@ LIGHT_GRAY = (200, 200, 200)
 DARK_GRAY = (50, 50, 50)
 
 # Card settings
-CARD_WIDTH = 150
-CARD_HEIGHT = 220
+CARD_WIDTH = 150 * 1.2
+CARD_HEIGHT = 220 * 1.2
 CARD_SPACING = 30
 
+CARD_SURFACE = pygame.Surface((CARD_WIDTH, CARD_HEIGHT), pygame.SRCALPHA)
+# Load the paper patina image
+CARD_BG = pygame.image.load("assets/images/card2.png").convert_alpha()
+# (Optional) Ensure it matches the surface size
+CARD_BG = pygame.transform.scale(CARD_BG, (CARD_WIDTH, CARD_HEIGHT))
+CARD_SURFACE.blit(CARD_BG, (0, 0))
+
 # Fonts
-title_font = pygame.font.Font(None, 48)
-card_font = pygame.font.Font(None, 72)
-info_font = pygame.font.Font(None, 32)
-small_font = pygame.font.Font(None, 24)
+FONT_FILE = "assets/fonts/MedievalSharp-Regular.ttf"
+# FONT_FILE = None
+
+title_font = pygame.font.Font(FONT_FILE, 48)
+card_font = pygame.font.Font(FONT_FILE, 72)
+info_font = pygame.font.Font(FONT_FILE, 32)
+small_font = pygame.font.Font(FONT_FILE, 24)
 
 # Button class
 class Button:
@@ -41,21 +59,31 @@ class Button:
         self.color = color
         self.text_color = text_color
         self.hovered = False
+        self.disabled = False
 
     def draw(self, surface):
-        color = tuple(min(c + 30, 255) for c in self.color) if self.hovered else self.color
+        if self.disabled:
+            # Draw disabled button in gray
+            color = GRAY
+            border_color = DARK_GRAY
+            text_color = DARK_GRAY
+        else:
+            color = tuple(min(c + 30, 255) for c in self.color) if self.hovered else self.color
+            border_color = WHITE
+            text_color = self.text_color
+            
         pygame.draw.rect(surface, color, self.rect, border_radius=8)
-        pygame.draw.rect(surface, WHITE, self.rect, 2, border_radius=8)
+        pygame.draw.rect(surface, border_color, self.rect, 2, border_radius=8)
         
-        text_surface = info_font.render(self.text, True, self.text_color)
+        text_surface = info_font.render(self.text, True, text_color)
         text_rect = text_surface.get_rect(center=self.rect.center)
         surface.blit(text_surface, text_rect)
 
     def is_clicked(self, pos):
-        return self.rect.collidepoint(pos)
+        return self.rect.collidepoint(pos) and not self.disabled
 
     def update_hover(self, pos):
-        self.hovered = self.rect.collidepoint(pos)
+        self.hovered = self.rect.collidepoint(pos) and not self.disabled
 
 
 # Card visual class
@@ -63,15 +91,15 @@ class CardVisual:
     def __init__(self, card: Card, x, y, index):
         self.card = card
         self.rect = pygame.Rect(x, y, CARD_WIDTH, CARD_HEIGHT)
-        self.index = index
+        self.index = index + 1
         self.hovered = False
 
     def draw(self, surface):
         # Card background based on suit class
         if self.card.suit['class'] == 'monster':
-            color = RED
+            color = BLACK
         elif self.card.suit['class'] == 'health':
-            color = GREEN
+            color = RED
         elif self.card.suit['class'] == 'weapon':
             color = BLUE
         else:
@@ -82,19 +110,25 @@ class CardVisual:
             color = tuple(min(c + 40, 255) for c in color)
 
         # Draw card background
-        pygame.draw.rect(surface, color, self.rect, border_radius=12)
-        pygame.draw.rect(surface, WHITE, self.rect, 3, border_radius=12)
+        screen.blit(CARD_SURFACE, self.rect)
+        # pygame.draw.rect(surface, color, self.rect, border_radius=12)
+        # pygame.draw.rect(surface, WHITE, self.rect, 3, border_radius=12)
+
+        # Draw card suit
+        suit_image_surface = load_emoji(self.card.suit['symbol'], 42)
+        suit_image_rect = suit_image_surface.get_rect(topright=(self.rect.x + CARD_WIDTH - 20, self.rect.y + 25))
+        surface.blit(suit_image_surface, suit_image_rect)
 
         # Draw card symbol and suit
-        symbol_text = f"{self.card.symbol}{self.card.suit['symbol']}"
+        symbol_text = self.card.symbol
         symbol_surface = card_font.render(symbol_text, True, WHITE)
         symbol_rect = symbol_surface.get_rect(center=self.rect.center)
         surface.blit(symbol_surface, symbol_rect)
 
         # Draw card value
         val_text = str(self.card.val)
-        val_surface = small_font.render(val_text, True, WHITE)
-        val_rect = val_surface.get_rect(topleft=(self.rect.x + 10, self.rect.y + 10))
+        val_surface = info_font.render(val_text, True, WHITE)
+        val_rect = val_surface.get_rect(topleft=(self.rect.x + 25, self.rect.y + 30))
         surface.blit(val_surface, val_rect)
 
         # Draw index number at bottom
@@ -120,9 +154,9 @@ class ScoundrelGame:
         
         # Create avoid button
         self.avoid_button = Button(
-            SCREEN_WIDTH // 2 - 100,
-            SCREEN_HEIGHT - 100,
-            200,
+            SCREEN_WIDTH // 2 - 140,
+            SCREEN_HEIGHT - 110,
+            280,
             50,
             "Avoid Room (A)",
             YELLOW,
@@ -145,7 +179,7 @@ class ScoundrelGame:
         total_width = len(self.scoundrel.dungeon.current_room) * CARD_WIDTH + \
                      (len(self.scoundrel.dungeon.current_room) - 1) * CARD_SPACING
         start_x = (SCREEN_WIDTH - total_width) // 2
-        card_y = 300
+        card_y = 225
 
         for i, card in enumerate(self.scoundrel.dungeon.current_room):
             x = start_x + i * (CARD_WIDTH + CARD_SPACING)
@@ -155,35 +189,35 @@ class ScoundrelGame:
 
     def draw_stats(self, surface):
         """Draw player stats at the top"""
-        y_pos = 50
-        
+        # y_pos = 50
+        x_pos = 50
+
         # HP
         hp_text = f"HP: {self.scoundrel.hp}/20"
         hp_color = GREEN if self.scoundrel.hp > 10 else (YELLOW if self.scoundrel.hp > 5 else RED)
         hp_surface = info_font.render(hp_text, True, hp_color)
-        surface.blit(hp_surface, (50, y_pos))
+        surface.blit(hp_surface, (x_pos, 50))
+        
+        # Weapon
+        weapon_text = f"Weapon: {self.scoundrel.weapon}"
+        weapon_surface = info_font.render(weapon_text, True, WHITE)
+        surface.blit(weapon_surface, (x_pos, 80))
 
+    def draw_cards_remaining(self, surface):
+        """Draw cards remaining under the avoid button"""
+        cards_text = f"Cards remaining: {self.scoundrel.dungeon.cards_remaining()}"
+        cards_surface = info_font.render(cards_text, True, WHITE)
+        cards_rect = cards_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 140))
+        surface.blit(cards_surface, cards_rect)
+
+    def draw_score(self, surface):
+        """Draw game score"""
         # Score
         score_text = f"Score: {self.scoundrel.score}"
         score_color = GREEN if self.scoundrel.score > 0 else RED
-        score_surface = info_font.render(score_text, True, score_color)
-        surface.blit(score_surface, (250, y_pos))
-
-        # Weapon
-        weapon_text = f"Weapon: {self.scoundrel.weapon}"
-        weapon_surface = info_font.render(weapon_text, True, BLUE)
-        surface.blit(weapon_surface, (500, y_pos))
-
-        # Cards remaining
-        cards_text = f"Cards: {self.scoundrel.dungeon.cards_remaining()}"
-        cards_surface = info_font.render(cards_text, True, WHITE)
-        surface.blit(cards_surface, (50, y_pos + 40))
-
-    def draw_title(self, surface):
-        """Draw game title"""
-        title_surface = title_font.render("SCOUNDREL", True, WHITE)
-        title_rect = title_surface.get_rect(center=(SCREEN_WIDTH // 2, 150))
-        surface.blit(title_surface, title_rect)
+        score_surface = title_font.render(score_text, True, score_color)
+        score_rect = score_surface.get_rect(center=(SCREEN_WIDTH // 2, 150))
+        surface.blit(score_surface, score_rect)
 
     def draw_game_over(self, surface):
         """Draw game over screen"""
@@ -245,6 +279,9 @@ class ScoundrelGame:
             if not self.game_over:
                 card_visuals = self.create_card_visuals()
                 
+                # Update button states
+                self.avoid_button.disabled = not self.scoundrel.dungeon.can_avoid
+                
                 # Update hover states
                 for card_visual in card_visuals:
                     card_visual.update_hover(mouse_pos)
@@ -268,7 +305,7 @@ class ScoundrelGame:
                                 break
 
                         # Check avoid button
-                        if self.avoid_button.is_clicked(mouse_pos):
+                        if self.avoid_button.is_clicked(mouse_pos) and self.scoundrel.dungeon.can_avoid:
                             self.scoundrel.dungeon.avoid_room()
 
                         # Check quit button
@@ -283,25 +320,26 @@ class ScoundrelGame:
                             self.running = False
                     else:
                         # Keyboard controls for cards
-                        if event.key == pygame.K_0 and len(self.scoundrel.dungeon.current_room) > 0:
+                        if event.key == pygame.K_1 and len(self.scoundrel.dungeon.current_room) > 0:
                             self.handle_card_interaction(self.scoundrel.dungeon.current_room[0])
-                        elif event.key == pygame.K_1 and len(self.scoundrel.dungeon.current_room) > 1:
+                        elif event.key == pygame.K_2 and len(self.scoundrel.dungeon.current_room) > 1:
                             self.handle_card_interaction(self.scoundrel.dungeon.current_room[1])
-                        elif event.key == pygame.K_2 and len(self.scoundrel.dungeon.current_room) > 2:
+                        elif event.key == pygame.K_3 and len(self.scoundrel.dungeon.current_room) > 2:
                             self.handle_card_interaction(self.scoundrel.dungeon.current_room[2])
-                        elif event.key == pygame.K_3 and len(self.scoundrel.dungeon.current_room) > 3:
+                        elif event.key == pygame.K_4 and len(self.scoundrel.dungeon.current_room) > 3:
                             self.handle_card_interaction(self.scoundrel.dungeon.current_room[3])
-                        elif event.key == pygame.K_a:
+                        elif event.key == pygame.K_a and self.scoundrel.dungeon.can_avoid:
                             self.scoundrel.dungeon.avoid_room()
                         elif event.key == pygame.K_q:
                             self.running = False
 
             # Drawing
-            screen.fill(DARK_GRAY)
+            # screen.fill(DARK_GRAY)
+            screen.blit(background, (0, 0))
 
             if not self.game_over:
                 # Draw game elements
-                self.draw_title(screen)
+                self.draw_score(screen)
                 self.draw_stats(screen)
 
                 # Draw cards
@@ -311,6 +349,9 @@ class ScoundrelGame:
                 # Draw buttons
                 self.avoid_button.draw(screen)
                 self.quit_button.draw(screen)
+                
+                # Draw cards remaining under avoid button
+                self.draw_cards_remaining(screen)
 
                 # Draw instructions
                 instructions = "Click cards or press 0-3 to interact | A to avoid room | Q to quit"
@@ -332,3 +373,4 @@ class ScoundrelGame:
 if __name__ == "__main__":
     game = ScoundrelGame()
     game.run()
+
