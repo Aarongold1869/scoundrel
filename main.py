@@ -1,4 +1,4 @@
-from .scoundrel import Scoundrel
+from scoundrel.scoundrel import Scoundrel
 
 from datetime import datetime
 import json
@@ -46,8 +46,8 @@ def update_scores(score: int):
 def view_high_scores():
     df = pd.read_json(HIGH_SCORES_FILE_PATH)
     if not df.empty:
-        df.sort_values('score', ascending=True)
-        print(df.head())
+        df_sorted = df.sort_values(by='score', ascending=False)
+        print(df_sorted.head())
     else:
         print('no scores to display')
     return

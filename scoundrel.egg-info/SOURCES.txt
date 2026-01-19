@@ -1,0 +1,7 @@
+pyproject.toml
+scoundrel/__init__.py
+scoundrel/scoundrel.py
+scoundrel.egg-info/PKG-INFO
+scoundrel.egg-info/SOURCES.txt
+scoundrel.egg-info/dependency_links.txt
+scoundrel.egg-info/top_level.txt
