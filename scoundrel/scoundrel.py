@@ -1,6 +1,6 @@
 from enum import Enum
 import random
-from typing import List, Literal, Optional, TypedDict
+from typing import Dict, List, Literal, Optional, TypedDict
 
 
 SUITS = [
@@ -24,7 +24,7 @@ class Card():
     
     def __init__(
             self,
-            suit: str,
+            suit: Dict[str, str],
             symbol: str,
             val: int,
             id: int
@@ -52,7 +52,7 @@ class Dungeon():
         self.can_avoid = True
         self.can_heal = True
         
-    def shuffle(self) -> List[Card]:
+    def shuffle(self) -> None:
         random.shuffle(self.cards)
 
     def display(self):
@@ -72,7 +72,7 @@ class Dungeon():
             self.can_avoid = True
             self.can_heal = True
 
-    def avoid_room(self )-> bool:
+    def avoid_room(self ) -> None:
         if not self.can_avoid:
             raise ValueError('cannot avoid.')
         random.shuffle(self.current_room)
@@ -104,7 +104,7 @@ class UI(Enum):
 
 
 class GameState(TypedDict):
-    status: Literal['active', 'done']
+    is_active: bool
     score: int
     hp: int
     weapon_level: int
@@ -139,7 +139,7 @@ class Scoundrel():
         self.weapon = Weapon(level=weapon_level)
 
     def fight_monster(self, monster_level: int, use_weapon: bool):
-        print(f'use weapon: {use_weapon}')
+        # print(f'use weapon: {use_weapon}')
         damage = monster_level * -1
         if use_weapon:
             damage = min(damage + self.weapon.level, 0)
@@ -154,7 +154,7 @@ class Scoundrel():
         fight_with = input("\nHow fight?\nUse hands (h). Use weapon (w). Cancel (c).")
 
         if fight_with == 'c':
-            return 
+            return None
 
         if fight_with == 'h':
             return False
@@ -207,7 +207,7 @@ class Scoundrel():
         self.game_is_active = self.hp > 0 and self.dungeon.cards_remaining() > 0
 
     def current_game_state(self) -> GameState:
-         GameState(
+        return GameState(
             is_active=self.game_is_active,
             score=self.score,
             hp=self.hp,
@@ -219,7 +219,7 @@ class Scoundrel():
             can_heal=self.dungeon.can_heal
         )
     
-    def take_action(self, action: str) -> Optional[str]:
+    def take_action(self, action: str) -> None:
         try:
             if action in ['1', '2', '3', '4']:
                 try:
