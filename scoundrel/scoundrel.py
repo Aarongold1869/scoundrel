@@ -76,7 +76,7 @@ class Dungeon():
         if not self.can_avoid:
             raise ValueError('cannot avoid.')
         random.shuffle(self.current_room)
-        self.cards = self.cards[4:] + self.current_room
+        self.cards = self.cards[len(self.current_room):] + self.current_room
         self.current_room = self.cards[:4]
         self.can_avoid = False
         
@@ -220,34 +220,31 @@ class Scoundrel():
         )
     
     def take_action(self, action: str) -> None:
-        try:
-            if action in ['1', '2', '3', '4']:
-                try:
-                    card_index = int(action) -1
-                    card = self.dungeon.current_room[card_index]
-                    self.interact_card(card=card) 
 
-                except IndexError:
-                    raise ValueError(f'no card at index {action}')
-                
-                except Exception as e:
-                    raise ValueError('invalid action')
+        if action in ['1', '2', '3', '4']:
+            try:
+                card_index = int(action) -1
+                card = self.dungeon.current_room[card_index]
+                self.interact_card(card=card) 
 
-            elif action == "a":
-                try:
-                    self.dungeon.avoid_room()
-                except Exception as e:
-                    raise ValueError('invalid action. cannot avoid')
-
-            elif action == 'q':
-                self.game_is_active = False
-
-            else:
+            except IndexError:
+                # print(f'no card at index {action}')
+                raise ValueError(f'no card at index {action}')
+            
+            except Exception as e:
+                # print('invalid action')
                 raise ValueError('invalid action')
 
-        except Exception as e:
-            raise ValueError(f'unexpected error: {e}')
-        
+        elif action == "a":
+            self.dungeon.avoid_room()
+
+        elif action == 'q':
+            self.game_is_active = False
+
+        else:
+            # print('invalid action')
+            raise ValueError('invalid action')
+
     def play(self):
         if self.ui == UI.CLI:
             while self.game_is_active:

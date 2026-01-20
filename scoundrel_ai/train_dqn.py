@@ -22,7 +22,7 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     
     # Create the environment
     env = ScoundrelEnv()
-    env = Monitor(env, "scoundrel_ai/logs")
+    env = Monitor(env, "scoundrel_ai/logs", info_keywords=())
     
     # Validate the environment
     print("Checking environment...")
@@ -31,7 +31,7 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     
     # Create evaluation environment
     eval_env = ScoundrelEnv()
-    eval_env = Monitor(eval_env)
+    eval_env = Monitor(eval_env, info_keywords=())
     
     # Create callbacks
     eval_callback = EvalCallback(
@@ -48,20 +48,21 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     model = DQN(
         "MlpPolicy",
         env,
-        learning_rate=1e-4,
-        buffer_size=50000,
-        learning_starts=1000,
-        batch_size=32,
+        learning_rate=3e-4,  # Increased for faster learning
+        buffer_size=100000,  # Larger buffer for more experience
+        learning_starts=500,  # Start learning sooner
+        batch_size=64,  # Larger batch for more stable updates
         tau=1.0,
-        gamma=0.99,
+        gamma=0.95,  # Slightly lower to value immediate rewards more
         train_freq=4,
-        gradient_steps=1,
-        target_update_interval=1000,
-        exploration_fraction=0.3,
+        gradient_steps=2,  # More gradient steps per update
+        target_update_interval=500,  # Update target network more frequently
+        exploration_fraction=0.4,  # Explore longer
         exploration_initial_eps=1.0,
-        exploration_final_eps=0.05,
+        exploration_final_eps=0.1,  # Keep some exploration
         verbose=1,
-        tensorboard_log="./scoundrel_ai/tensorboard_logs/"
+        tensorboard_log="./scoundrel_ai/tensorboard_logs/",
+        policy_kwargs=dict(net_arch=[256, 256])  # Larger network
     )
     
     # Train the agent
@@ -69,7 +70,8 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     model.learn(
         total_timesteps=total_timesteps,
         callback=eval_callback,
-        log_interval=100
+        log_interval=10,
+        progress_bar=True
     )
     
     # Save the final model
@@ -86,14 +88,14 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
     os.makedirs("scoundrel_ai/logs", exist_ok=True)
     
     env = ScoundrelEnv()
-    env = Monitor(env, "scoundrel_ai/logs")
+    env = Monitor(env, "scoundrel_ai/logs", info_keywords=())
     
     print("Checking environment...")
     check_env(env, warn=True)
     print("Environment check passed!")
     
     eval_env = ScoundrelEnv()
-    eval_env = Monitor(eval_env)
+    eval_env = Monitor(eval_env, info_keywords=())
     
     eval_callback = EvalCallback(
         eval_env,
@@ -123,7 +125,8 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
     model.learn(
         total_timesteps=total_timesteps,
         callback=eval_callback,
-        log_interval=10
+        log_interval=1,
+        progress_bar=True
     )
     
     model.save(f"{save_path}/final_model")
