@@ -4,5 +4,5 @@
 */__pycache__
 .mypy_cache/
 .pytest_cache/
-*/logs/
-*/tensorboard_logs/
+scoundrel_ai/logs/*
+scoundrel_ai/tensorboard_logs/*
