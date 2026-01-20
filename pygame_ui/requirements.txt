@@ -1,0 +1,10 @@
+cairocffi==1.7.1
+CairoSVG==2.8.2
+cssselect2==0.8.0
+defusedxml==0.7.1
+emoji==2.15.0
+pillow==12.1.0
+pygame==2.6.1
+pygame_emojis==0.2.0
+tinycss2==1.5.1
+webencodings==0.5.1

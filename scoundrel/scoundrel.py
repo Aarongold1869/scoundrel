@@ -1,5 +1,6 @@
+from enum import Enum
 import random
-from typing import List
+from typing import List, Literal, Optional
 
 
 SUITS = [
@@ -81,7 +82,6 @@ class Dungeon():
         self.can_avoid = False
         
 
-
 class Weapon():
 
     def __init__(self, level: int):
@@ -98,13 +98,20 @@ class Weapon():
             self.max_monster_level = monster_level
 
 
+class UI(Enum):
+    CLI = 'cli'
+    PYGAME = 'pygame'
+    API = 'api'
+
+
 class Scoundrel():
 
-    def __init__(self):
+    def __init__(self, ui: UI = UI.CLI):
+        self.ui = ui
         self.score = -188
         self.hp = 20
         self.dungeon = Dungeon()
-        self.weapon = None
+        self.weapon = Weapon(level=0)
         
     def update_score(self):
         self.score = sum(card.val * -1 for card in self.dungeon.cards if card.suit['name'] not in ['heart', 'diamond']) + self.hp
@@ -120,36 +127,57 @@ class Scoundrel():
         self.weapon = Weapon(level=weapon_level)
 
     def fight_monster(self, monster_level: int, use_weapon: bool):
+        print(f'use weapon: {use_weapon}')
         damage = monster_level * -1
         if use_weapon:
             damage = min(damage + self.weapon.level, 0)
             self.weapon.degrade(monster_level=monster_level)
         self.update_hp(val=damage)
+
+    def use_weapon_cli(self, card: Card) -> Optional[bool]:
+
+        if self.weapon.level == 0:
+            return False
+
+        fight_with = input("\nHow fight?\nUse hands (h). Use weapon (w). Cancel (c).")
+
+        if fight_with == 'c':
+            return 
+
+        if fight_with == 'h':
+            return False
         
+        elif fight_with == 'w':
+            if self.weapon and card.val < self.weapon.max_monster_level:
+                return True
+            
+            elif not self.weapon:
+                print('no weapon equipped.')
+                return False
+            
+            elif card.val >= self.weapon.max_monster_level:
+                print('weapon is not strong enough.')
+                return None
+                
+        else:
+            print('invalid action.')
+            return None
+        
+        return None
+    
     def interact_card(self, card: Card):
         if card.suit['class'] == 'monster':
-            # print(f'Fight Monster: {card.val}')
-            fight_with = input("\nHow fight?\nUse hands (h). Use weapon (w).")
 
-            if fight_with == 'h':
-                self.fight_monster(monster_level=card.val,
-                                   use_weapon=False)
+            if self.ui == UI.CLI:
+                use_weapon = None
+                while use_weapon is None:
+                    use_weapon = self.use_weapon_cli(card=card)
             
-            elif fight_with == 'w':
-                if self.weapon and card.val < self.weapon.max_monster_level:
-                    self.fight_monster(monster_level=card.val,
-                                       use_weapon=True)
-                elif not self.weapon:
-                    print('no weapon equipped.')
-                    return
-                
-                elif card.val >= self.weapon.max_monster_level:
-                    print('weapon is not strong enough.')
-                    return
-                     
-            else:
-                print('invalid action.')
-                return
+            else: 
+                use_weapon = card.val < self.weapon.level
+
+            self.fight_monster(monster_level=card.val,
+                                       use_weapon=use_weapon)
                     
         elif card.suit['class'] == 'health':
             # print(f'Health potion: {card.val}')
@@ -167,18 +195,21 @@ class Scoundrel():
 
     def play(self):
         while self.hp > 0 and self.dungeon.cards_remaining() > 0:
-            print(f'\nHP: {self.hp} | Score: {self.score} | Weapon: {self.weapon} | Cards remaining: {self.dungeon.cards_remaining()} \n')
-            # print('Score: ', self.score)
-            # print('Weapon: ', self.weapon)
-            # print('Cards remaining: ', self.dungeon.cards_remaining())
-            self.dungeon.display_current_room()
-            # self.dungeon.display()
-            action = input("\nwhat do? ")
+
+            action = '1'
+
+            if self.ui == UI.CLI:
+                print(f'\nHP: {self.hp} | Score: {self.score} | Weapon: {self.weapon} | Cards remaining: {self.dungeon.cards_remaining()} \n')
+                self.dungeon.display_current_room()
+                # self.dungeon.display()
+                action = input("\nwhat do? ")
             
             if action in ['1', '2', '3', '4']:
                 try:
                     card_index = int(action) -1
-                    self.interact_card(card=self.dungeon.current_room[card_index])
+                    card = self.dungeon.current_room[card_index]
+                    self.interact_card(card=card)
+
                 except IndexError:
                     print('invalid action.')
 

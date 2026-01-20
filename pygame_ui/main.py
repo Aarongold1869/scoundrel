@@ -1,6 +1,7 @@
 from scoundrel.scoundrel import Scoundrel, Card
 
-import asyncio
+import os
+from pathlib import Path
 import pygame
 from pygame_emojis import load_emoji
 import sys
@@ -8,13 +9,16 @@ import sys
 # Initialize pygame
 pygame.init()
 
+BASE_DIR = Path(__file__).resolve().parent
+ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
+
 # Screen settings
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Scoundrel - Card Dungeon Crawler")
 
-background = pygame.image.load("assets/images/dungeon_background.png").convert_alpha()
+background = pygame.image.load(os.path.join(ASSETS_DIR, "images/dungeon_background.png")).convert_alpha()
 
 # Scale background to fit screen
 background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -37,13 +41,13 @@ CARD_SPACING = 30
 
 CARD_SURFACE = pygame.Surface((CARD_WIDTH, CARD_HEIGHT), pygame.SRCALPHA)
 # Load the paper patina image
-CARD_BG = pygame.image.load("assets/images/card2.png").convert_alpha()
+CARD_BG = pygame.image.load(os.path.join(ASSETS_DIR, "images/card2.png")).convert_alpha()
 # (Optional) Ensure it matches the surface size
 CARD_BG = pygame.transform.scale(CARD_BG, (CARD_WIDTH, CARD_HEIGHT))
 CARD_SURFACE.blit(CARD_BG, (0, 0))
 
 # Fonts
-FONT_FILE = "assets/fonts/MedievalSharp-Regular.ttf"
+FONT_FILE = os.path.join(ASSETS_DIR, "fonts/MedievalSharp-Regular.ttf")
 # FONT_FILE = None
 
 title_font = pygame.font.Font(FONT_FILE, 48)
