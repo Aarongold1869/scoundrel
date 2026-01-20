@@ -1,6 +1,6 @@
 from enum import Enum
 import random
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, TypedDict
 
 
 SUITS = [
@@ -72,10 +72,9 @@ class Dungeon():
             self.can_avoid = True
             self.can_heal = True
 
-    def avoid_room(self):
+    def avoid_room(self )-> bool:
         if not self.can_avoid:
-            print('cannot avoid.')
-            return
+            raise ValueError('cannot avoid.')
         random.shuffle(self.current_room)
         self.cards = self.cards[4:] + self.current_room
         self.current_room = self.cards[:4]
@@ -104,6 +103,18 @@ class UI(Enum):
     API = 'api'
 
 
+class GameState(TypedDict):
+    status: Literal['active', 'done']
+    score: int
+    hp: int
+    weapon_level: int
+    weapon_max_monster_level: int
+    current_room: List[Card]
+    num_cards_remaining: int
+    can_avoid: bool
+    can_heal: bool
+    
+
 class Scoundrel():
 
     def __init__(self, ui: UI = UI.CLI):
@@ -112,7 +123,8 @@ class Scoundrel():
         self.hp = 20
         self.dungeon = Dungeon()
         self.weapon = Weapon(level=0)
-        
+        self.game_is_active = True
+
     def update_score(self):
         self.score = sum(card.val * -1 for card in self.dungeon.cards if card.suit['name'] not in ['heart', 'diamond']) + self.hp
 
@@ -192,40 +204,68 @@ class Scoundrel():
         self.dungeon.can_avoid = False
         self.dungeon.discard(discard=card)
         self.update_score()
+        self.game_is_active = self.hp > 0 and self.dungeon.cards_remaining() > 0
 
-    def play(self):
-        while self.hp > 0 and self.dungeon.cards_remaining() > 0:
-
-            action = '1'
-
-            if self.ui == UI.CLI:
-                print(f'\nHP: {self.hp} | Score: {self.score} | Weapon: {self.weapon} | Cards remaining: {self.dungeon.cards_remaining()} \n')
-                self.dungeon.display_current_room()
-                # self.dungeon.display()
-                action = input("\nwhat do? ")
-            
+    def current_game_state(self) -> GameState:
+         GameState(
+            is_active=self.game_is_active,
+            score=self.score,
+            hp=self.hp,
+            weapon_level=self.weapon.level,
+            weapon_max_monster_level=self.weapon.max_monster_level,
+            current_room=self.dungeon.current_room,
+            num_cards_remaining=self.dungeon.cards_remaining(),
+            can_avoid=self.dungeon.can_avoid,
+            can_heal=self.dungeon.can_heal
+        )
+    
+    def take_action(self, action: str) -> Optional[str]:
+        try:
             if action in ['1', '2', '3', '4']:
                 try:
                     card_index = int(action) -1
                     card = self.dungeon.current_room[card_index]
-                    self.interact_card(card=card)
+                    self.interact_card(card=card) 
 
                 except IndexError:
-                    print('invalid action.')
+                    raise ValueError(f'no card at index {action}')
+                
+                except Exception as e:
+                    raise ValueError('invalid action')
 
             elif action == "a":
-                self.dungeon.avoid_room()
+                try:
+                    self.dungeon.avoid_room()
+                except Exception as e:
+                    raise ValueError('invalid action. cannot avoid')
 
             elif action == 'q':
-                return self.score
+                self.game_is_active = False
 
             else:
-                print('invalid action.')
-        
-        if self.score > 0:
-            print('\nYou win!')
-        else:
-            print('\nYou lose.')
+                raise ValueError('invalid action')
 
-        print('Score: ', self.score)
-        return self.score
+        except Exception as e:
+            raise ValueError(f'unexpected error: {e}')
+        
+    def play(self):
+        if self.ui == UI.CLI:
+            while self.game_is_active:
+
+                print(f'\nHP: {self.hp} | Score: {self.score} | Weapon: {self.weapon} | Cards remaining: {self.dungeon.cards_remaining()} \n')
+                self.dungeon.display_current_room()
+                # self.dungeon.display()
+                action = input("\nwhat do? ")
+                try:
+                    self.take_action(action=action)
+                except Exception as e:
+                    print(e)
+            
+            if self.score > 0:
+                print('\nYou win!')
+            else:
+                print('\nYou lose.')
+
+            print('Score: ', self.score)
+            return self.score
+    
