@@ -187,7 +187,69 @@ class ScoundrelEnv(gym.Env):
         return observation, info
     
     def step(self, action):
-        """Execute one step in the environment"""
+        """Execute one step in the environment
+        
+        Args:
+            action (int): Action to take (0-3: interact with cards 1-4, 4: avoid room)
+            
+        Returns:
+            tuple: (observation, reward, terminated, truncated, info)
+            
+        Reward Shaping Strategy:
+            The reward function is designed to maximize the game score while encouraging
+            efficient resource management. Components include:
+            
+            1. HP Management:
+               - Gaining HP: +hp_change * 2.0
+               - First potion in room: +hp_change * 2.0 + bonus(+2.0 if HP < 10)
+               - Additional potions in room: -potion_value * 2.0 (waste penalty proportional to wasted healing)
+               - Taking damage: +hp_change * 1.5 (negative)
+               - Taking damage when low HP (<8): -2.0 extra penalty
+               
+            2. Weapon Management:
+               - Acquiring weapon: +weapon_level * 8.0
+               - Early weapon pickup (cards > 30): +5.0 bonus
+               - Replacing weapon with high remaining strength (>80%): -old_weapon_level * 2.0 (severe waste penalty)
+               - Replacing weapon with medium remaining strength (>60%): -old_weapon_level * 1.0
+               - Replacing well-used weapon: +3.0 (good management)
+               
+            3. Monster Fighting Efficiency:
+               - No damage taken: +3.0
+               - Early game strategy (no weapon equipped):
+                 * Fighting monster without weapon: +4.0 (weapon conservation)
+                 * Taking damage <= monster_value (acceptable trade): +2.0
+                 * Taking heavy damage (> monster_value): -3.0
+               - Weapon used on high-level monster (80%+ of weapon max): +10.0
+               - Weapon used on medium-level monster (60-80%): +5.0
+               - Weapon used on low-level monster (40-60%): +1.0
+               - Weapon wasted on weak monster (<40%): -5.0
+               - Minimal damage taken (<3 HP): +1.0
+               
+            4. Strategic Avoidance:
+               - Avoiding unbeatable room (insufficient HP/healing/weapon): +8.0 (excellent survival decision)
+               - Avoiding survivable but risky room (low HP): +2.0
+               - Avoiding survivable room (wasteful): -3.0
+               
+            5. Progress Rewards:
+               - Playing any card: +1.5
+               - Progressing without HP loss: +0.5 bonus
+               
+            6. Health Maintenance:
+               - Maintaining healthy HP (>=15): +0.3 per step
+               
+            7. Score Optimization (PRIMARY GOAL):
+               - Score increase: +score_change * 2.0
+               - Final score bonus: Normalized from -188 (worst) to +30 (best)
+                 * Scaled to 0-100 range, then multiplied by reward factor
+                 * Score of -188 → 0 reward
+                 * Score of +30 → 100 reward
+                 * Score of -79 (halfway) → 50 reward
+               
+            8. Invalid Actions:
+               - Invalid action format: -5.0 (episode truncated)
+               - Illegal move (e.g., non-existent card): -10.0 (episode truncated)
+               - Unexpected error: -15.0 (episode terminated)
+        """
         # Get previous state using current_game_state
         prev_state = self.game.current_game_state()
         previous_score = prev_state['score']
@@ -270,7 +332,7 @@ class ScoundrelEnv(gym.Env):
                         reward += 2.0
                 else:
                     # Additional potions are wasted!
-                    reward -= 5.0  # Big penalty for wasting potion
+                    reward -= card_interacted.val * 2.0  # Penalty proportional to wasted healing
             else:
                 reward += hp_change * 2.0
         elif hp_change < 0:
@@ -284,24 +346,24 @@ class ScoundrelEnv(gym.Env):
             # Picking up a new weapon
             new_weapon_level = new_state['weapon_level']
             
-            # PENALIZE WASTING WEAPONS
+            # PENALIZE WASTING WEAPONS (proportional to weapon level)
             if previous_weapon_level > 0:
                 # Had a weapon before - check if it was used optimally
                 # Weapon is "wasted" if we didn't maximize its degradation potential
                 degradation_ratio = previous_weapon_max / 15.0  # How degraded was it? (15 is max)
                 
                 if degradation_ratio > 0.8:  # Weapon still very strong (not degraded much)
-                    reward -= 4.0  # Big penalty for replacing unused weapon
+                    reward -= previous_weapon_level * 2.0  # Severe penalty proportional to weapon level
                 elif degradation_ratio > 0.6:
-                    reward -= 2.0  # Moderate penalty
+                    reward -= previous_weapon_level * 1.0  # Moderate penalty proportional to weapon level
                 else:
-                    reward += 1.0  # Good, weapon was used before replacing
+                    reward += 3.0  # Good, weapon was used before replacing
             
             # Base reward for getting weapon
-            reward += new_weapon_level * 5.0  # Getting weapons is critical
+            reward += new_weapon_level * 8.0  # Getting weapons is critical
             # Bonus for picking up weapons early
             if previous_cards > 30:
-                reward += 3.0  # Early weapon pickup is excellent
+                reward += 5.0  # Early weapon pickup is excellent
         
         # 3. Monster fighting efficiency and weapon optimization
         if card_interacted and card_interacted.suit['class'] == 'monster':
@@ -309,6 +371,20 @@ class ScoundrelEnv(gym.Env):
             had_weapon = previous_weapon_level > 0
             weapon_max_before = previous_weapon_max
             weapon_max_after = new_state['weapon_max_monster_level']
+            
+            # EARLY GAME STRATEGY: Reward fighting monsters without weapons
+            # This conserves weapons for later when they're more valuable
+            if not had_weapon:
+                # Fighting without weapon is good strategy early game
+                reward += 4.0  # Bonus for weapon conservation
+                
+                # Evaluate the HP trade-off
+                if hp_change == 0:  # Managed to avoid damage (healed in room)
+                    reward += 3.0  # Excellent early game play
+                elif abs(hp_change) <= monster_val:  # Acceptable HP trade
+                    reward += 2.0  # Good trade - saving weapon for later
+                else:  # Taking more damage than monster value
+                    reward -= 3.0  # Poor trade-off
             
             # Reward efficient monster fighting (weapons auto-used when equipped)
             if hp_change == 0:  # No damage taken
@@ -320,22 +396,48 @@ class ScoundrelEnv(gym.Env):
                     degradation_ratio = monster_val / weapon_max_before if weapon_max_before > 0 else 0
                     
                     if degradation_ratio >= 0.8:  # Used on high-level monster (80%+ of max)
-                        reward += 5.0  # Excellent weapon usage!
+                        reward += 10.0  # Excellent weapon usage!
                     elif degradation_ratio >= 0.6:
-                        reward += 3.0  # Good weapon usage
+                        reward += 5.0  # Good weapon usage
                     elif degradation_ratio >= 0.4:
                         reward += 1.0  # Okay weapon usage
                     else:
-                        reward -= 2.0  # Bad! Wasted weapon on weak monster
+                        reward -= 5.0  # Bad! Wasted weapon on weak monster
                         
             elif hp_change > -3:  # Minimal damage
                 reward += 1.0
         
-        # 4. Strategic avoidance
+        # 4. Strategic avoidance - reward avoiding unbeatable rooms
         if action_str == 'a':
-            # Penalty reduced if it was strategic (low HP and dangerous room)
-            if previous_hp < 8:
-                reward += 1.0  # Good decision to avoid when low HP
+            # Analyze if the room was survivable
+            room_cards = prev_state['current_room']
+            total_monster_damage = 0
+            total_healing = 0
+            monsters_defeateable_by_weapon = 0
+            
+            for card in room_cards:
+                if card.suit['class'] == 'monster':
+                    # Check if weapon can defeat without damage
+                    if previous_weapon_level > 0 and card.val <= previous_weapon_level:
+                        monsters_defeateable_by_weapon += 1
+                    else:
+                        # Would take damage equal to monster value
+                        total_monster_damage += card.val
+                elif card.suit['class'] == 'health' and prev_state['can_heal']:
+                    total_healing += card.val
+            
+            # Calculate if room is survivable
+            net_hp_after_room = previous_hp + total_healing - total_monster_damage
+            
+            if net_hp_after_room <= 0:
+                # UNBEATABLE ROOM - cannot survive even with optimal play
+                reward += 8.0  # Excellent decision to avoid!
+            elif previous_hp < 8 or net_hp_after_room < 5:
+                # Survivable but risky - avoiding is reasonable
+                reward += 2.0
+            else:
+                # Room is clearly survivable - avoiding is wasteful
+                reward -= 3.0
         
         # 5. Progress rewards
         if cards_change > 0:
@@ -354,12 +456,13 @@ class ScoundrelEnv(gym.Env):
         # Check if game is over - FOCUS ON SCORE, NOT SURVIVAL
         if not new_state['is_active']:
             terminated = True
-            # Just use final score as primary signal
-            # Positive score = good, negative score = bad
-            if new_state['score'] > 0:
-                reward += new_state['score'] * 1.0  # Scale final score
-            else:
-                reward += new_state['score'] * 0.5  # Still penalize negative score but less
+            # Normalize final score proportionally: -188 (worst) to +30 (best)
+            # Map to 0-100 scale to reward higher scores even if negative
+            min_score = -188  # Worst possible score
+            max_score = 30    # Best possible score
+            normalized_score = (new_state['score'] - min_score) / (max_score - min_score)
+            # Scale to 0-100 range for meaningful reward signal
+            reward += normalized_score * 100.0
         
         observation = self._get_obs()
         info = self._get_info()

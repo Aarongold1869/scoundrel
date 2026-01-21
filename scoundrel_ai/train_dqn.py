@@ -187,6 +187,7 @@ def evaluate_model(model_path, episodes=10):
     print(f"Evaluation Summary ({episodes} episodes):")
     print(f"  Average Reward: {sum(total_rewards)/len(total_rewards):.2f}")
     print(f"  Average Score: {sum(total_scores)/len(total_scores):.2f}")
+    print(f"  Max Score: {max(total_scores):.2f}")
     print(f"  Wins: {wins}/{episodes} ({wins/episodes*100:.1f}%)")
     print(f"{'='*60}")
     
