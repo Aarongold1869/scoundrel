@@ -12,7 +12,8 @@ import gymnasium as gym
 from scoundrel_ai.scoundrel_env import ScoundrelEnv, StrategyLevel
 import os
 import glob
-import glob
+import json
+from datetime import datetime
 
 
 def get_tensorboard_log_name(algorithm, strategy_level, timesteps):
@@ -118,6 +119,13 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     model.save(f"{save_path}/final_model")
     print(f"\nModel saved to {save_path}/final_model")
     
+    # Write tensorboard model name to text file
+    tensorboard_name = os.path.basename(tensorboard_log_dir)
+    model_name_file = f"{save_path}/model_name.txt"
+    with open(model_name_file, 'w') as f:
+        f.write(tensorboard_name)
+    print(f"Model name saved to {model_name_file}: {tensorboard_name}")
+    
     return model
 
 
@@ -175,6 +183,13 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
     
     model.save(f"{save_path}/final_model")
     print(f"\nModel saved to {save_path}/final_model")
+    
+    # Write tensorboard model name to text file
+    tensorboard_name = os.path.basename(tensorboard_log_dir)
+    model_name_file = f"{save_path}/model_name.txt"
+    with open(model_name_file, 'w') as f:
+        f.write(tensorboard_name)
+    print(f"Model name saved to {model_name_file}: {tensorboard_name}")
     
     return model
 
@@ -234,6 +249,45 @@ def evaluate_model(model_path, episodes=10):
     print(f"  Max Score: {max(total_scores):.2f}")
     print(f"  Wins: {wins}/{episodes} ({wins/episodes*100:.1f}%)")
     print(f"{'='*60}")
+    
+    # Write scores to JSON file
+    # Try to read model name from model_name.txt file
+    model_dir = os.path.dirname(model_path)
+    model_name_file = os.path.join(model_dir, "model_name.txt")
+    
+    if os.path.exists(model_name_file):
+        with open(model_name_file, 'r') as f:
+            model_name = f.read().strip()
+    else:
+        # Fall back to basename if file doesn't exist
+        model_name = os.path.basename(model_path)
+    
+    scores_file = "scoundrel_ai/evaluation_scores.json"
+    
+    # Load existing scores if file exists
+    if os.path.exists(scores_file):
+        with open(scores_file, 'r') as f:
+            scores_data = json.load(f)
+    else:
+        scores_data = []
+    
+    # Append new score entry
+    score_entry = {
+        "model": model_name,
+        "average_reward": sum(total_rewards)/len(total_rewards),
+        "average_score": sum(total_scores)/len(total_scores),
+        "max_score": max(total_scores),
+        "wins": f"{wins}/{episodes} {wins/episodes*100:.1f}",
+        "timestamp": datetime.now().isoformat()
+    }
+    scores_data.append(score_entry)
+    
+    # Write back to file
+    os.makedirs("scoundrel_ai", exist_ok=True)
+    with open(scores_file, 'w') as f:
+        json.dump(scores_data, f, indent=2)
+    
+    print(f"\nScore saved to {scores_file}")
     
     env.close()
 
