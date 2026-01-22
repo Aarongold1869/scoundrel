@@ -71,13 +71,29 @@ class ScoundrelEnv(gym.Env):
         #   * is_valid_action (1 if can interact, 0 if not)
         #   * can_defeat_with_weapon (1 if weapon can defeat without damage)
         #   * weapon_efficiency (normalized: how good this monster is for weapon use)
+        #
+        # Survivability Metrics (3 features):
+        # - Can survive room (binary)
+        # - Minimum HP after optimal clear (0-20)
+        # - Danger level (max_monster - weapon_level, can be negative)
+        #
+        # Strategic Context (2 features):
+        # - HP buffer (current_HP - max_remaining_monster, can be negative)
+        # - Weapon degradation forecast (weapon_level after clearing room)
+        #
+        # Threat Assessment (1 feature):
+        # - Monster threat ratio (max_monster / current_HP, or 0)
+        #
+        # Temporal Features (2 features):
+        # - Game phase (0=early 0-33%, 0.5=mid 33-66%, 1=late 66-100%)
+        # - Resource scarcity (ratio of remaining resources to total remaining cards)
         # 
-        # Total: 11 + 5 + 24 = 40 features
+        # Total: 11 + 5 + 24 + 3 + 2 + 1 + 2 = 48 features
         
         self.observation_space = spaces.Box(
             low=0,
             high=300,  # Max value to accommodate sum of card values (monsters ~208, weapons/health ~54 each)
-            shape=(40,),  # Extended observation space
+            shape=(48,),  # Extended observation space with survivability, strategic, and temporal metrics
             dtype=np.float32
         )
         
@@ -86,7 +102,7 @@ class ScoundrelEnv(gym.Env):
         # Use the game's current_game_state method
         game_state: GameState = self.game.current_game_state()
         
-        obs = np.zeros(40, dtype=np.float32)
+        obs = np.zeros(48, dtype=np.float32)
         
         # Basic state from GameState (11 features)
         obs[0] = game_state['hp']
@@ -169,6 +185,73 @@ class ScoundrelEnv(gym.Env):
             else:
                 # No card at this position
                 obs[base_idx:base_idx + 6] = 0.0
+        
+        # Survivability Metrics (3 features) - indices 40-42
+        hp = game_state['hp']
+        weapon_level = game_state['weapon_level']
+        
+        # Calculate minimum HP after clearing room optimally
+        # Assume: take all weapons first, use weapon on monsters, take health last
+        min_hp_after = hp
+        temp_weapon = weapon_level
+        
+        # Calculate damage from monsters
+        monster_cards = [c for c in current_room if c.suit['class'] == 'monster']
+        weapon_cards = [c for c in current_room if c.suit['class'] == 'weapon']
+        
+        # Best case: pick up weapons first
+        for wc in weapon_cards:
+            temp_weapon = max(temp_weapon, wc.val)
+        
+        # Fight monsters with best weapon
+        for mc in monster_cards:
+            if mc.val <= temp_weapon:
+                temp_weapon -= 1  # Weapon degrades
+            else:
+                min_hp_after -= (mc.val - temp_weapon)  # Take damage
+                temp_weapon = 0  # Weapon breaks
+        
+        # Add healing
+        min_hp_after += total_healing
+        min_hp_after = min(min_hp_after, 20)  # Cap at max HP
+        
+        obs[40] = 1.0 if min_hp_after > 0 else 0.0  # Can survive room
+        obs[41] = max(min_hp_after, 0.0)  # Minimum HP after clear
+        obs[42] = max_monster_val - weapon_level  # Danger level (can be negative)
+        
+        # Strategic Context (2 features) - indices 43-44
+        # HP buffer: current HP minus strongest remaining monster
+        remaining_monsters = [c for c in self.game.dungeon.cards if c.suit['class'] == 'monster']
+        max_remaining_monster = max([c.val for c in remaining_monsters], default=0)
+        obs[43] = hp - max_remaining_monster  # Can be negative
+        
+        # Weapon degradation forecast (already calculated above)
+        obs[44] = temp_weapon  # Weapon level after clearing this room
+        
+        # Threat Assessment (1 feature) - index 45
+        # Monster threat ratio
+        if hp > 0 and max_monster_val > 0:
+            obs[45] = max_monster_val / hp
+        else:
+            obs[45] = 0.0
+        
+        # Temporal Features (2 features) - indices 46-47
+        # Game phase (early/mid/late)
+        progress = (44 - game_state['num_cards_remaining']) / 44.0
+        if progress < 0.33:
+            game_phase = 0.0  # Early game
+        elif progress < 0.66:
+            game_phase = 0.5  # Mid game
+        else:
+            game_phase = 1.0  # Late game
+        obs[46] = game_phase
+        
+        # Resource scarcity (ratio of remaining resources to total cards)
+        remaining_resource_value = game_state['remaining_weapon_sum'] + game_state['remaining_health_potion_sum']
+        total_remaining_value = (game_state['remaining_monster_sum'] + 
+                                game_state['remaining_weapon_sum'] + 
+                                game_state['remaining_health_potion_sum'])
+        obs[47] = remaining_resource_value / max(total_remaining_value, 1)
         
         return obs
     

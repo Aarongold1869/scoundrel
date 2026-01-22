@@ -211,6 +211,26 @@ def evaluate_model(model_path, episodes=10):
             model = DQN.load(model_path, env=env)
         except:
             model = PPO.load(model_path, env=env)
+
+    # Try to read model name from model_name.txt file
+    model_dir = os.path.dirname(model_path)
+    model_name_file = os.path.join(model_dir, "model_name.txt")
+    
+    if os.path.exists(model_name_file):
+        with open(model_name_file, 'r') as f:
+            model_name = f.read().strip()
+    else:
+        # Fall back to basename if file doesn't exist
+        model_name = os.path.basename(model_path)
+    
+    scores_file = "high_scores.json"
+    
+    # Load existing scores if file exists
+    if os.path.exists(scores_file):
+        with open(scores_file, 'r') as f:
+            scores_data = json.load(f)
+    else:
+        scores_data = []
     
     total_rewards = []
     total_scores = []
@@ -236,6 +256,13 @@ def evaluate_model(model_path, episodes=10):
         total_scores.append(info['score'])
         if info['score'] > 0:
             wins += 1
+
+        # Append new score entry
+        scores_data.append({
+            "name": model_name,
+            "score": info['score'],
+            "timestamp": datetime.now().isoformat()
+        })
         
         print(f"\nEpisode {episode + 1} Results:")
         print(f"  Reward: {episode_reward:.2f}")
@@ -250,40 +277,7 @@ def evaluate_model(model_path, episodes=10):
     print(f"  Wins: {wins}/{episodes} ({wins/episodes*100:.1f}%)")
     print(f"{'='*60}")
     
-    # Write scores to JSON file
-    # Try to read model name from model_name.txt file
-    model_dir = os.path.dirname(model_path)
-    model_name_file = os.path.join(model_dir, "model_name.txt")
-    
-    if os.path.exists(model_name_file):
-        with open(model_name_file, 'r') as f:
-            model_name = f.read().strip()
-    else:
-        # Fall back to basename if file doesn't exist
-        model_name = os.path.basename(model_path)
-    
-    scores_file = "scoundrel_ai/evaluation_scores.json"
-    
-    # Load existing scores if file exists
-    if os.path.exists(scores_file):
-        with open(scores_file, 'r') as f:
-            scores_data = json.load(f)
-    else:
-        scores_data = []
-    
-    # Append new score entry
-    score_entry = {
-        "model": model_name,
-        "average_reward": sum(total_rewards)/len(total_rewards),
-        "average_score": sum(total_scores)/len(total_scores),
-        "max_score": max(total_scores),
-        "wins": f"{wins}/{episodes} {wins/episodes*100:.1f}",
-        "timestamp": datetime.now().isoformat()
-    }
-    scores_data.append(score_entry)
-    
     # Write back to file
-    os.makedirs("scoundrel_ai", exist_ok=True)
     with open(scores_file, 'w') as f:
         json.dump(scores_data, f, indent=2)
     
