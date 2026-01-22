@@ -113,20 +113,26 @@ class GameState(TypedDict):
     num_cards_remaining: int
     can_avoid: bool
     can_heal: bool
+    remaining_monster_sum: int
+    remaining_health_potion_sum: int
+    remaining_weapon_sum: int
     
 
 class Scoundrel():
 
     def __init__(self, ui: UI = UI.CLI):
         self.ui = ui
-        self.score = -188
+        self.remaining_monster_sum = 208
+        self.remaining_health_potion_sum = 54
+        self.remaining_weapon_sum = 54
         self.hp = 20
+        self.score = (self.remaining_monster_sum * -1) + self.hp
         self.dungeon = Dungeon()
         self.weapon = Weapon(level=0)
         self.game_is_active = True
 
     def update_score(self):
-        self.score = sum(card.val * -1 for card in self.dungeon.cards if card.suit['name'] not in ['heart', 'diamond']) + self.hp
+        self.score = (self.remaining_monster_sum * -1) + self.hp
 
     def update_hp(self, val: int):
         self.hp += val
@@ -190,16 +196,19 @@ class Scoundrel():
 
             self.fight_monster(monster_level=card.val,
                                        use_weapon=use_weapon)
+            self.remaining_monster_sum -= card.val
                     
         elif card.suit['class'] == 'health':
             # print(f'Health potion: {card.val}')
             if self.dungeon.can_heal:
                 self.update_hp(val=card.val)
             self.dungeon.can_heal = False
+            self.remaining_health_potion_sum -= card.val
 
         elif card.suit['class'] == 'weapon':
             # print(f'Equip weapon: {card.val}')
             self.equip_weapon(weapon_level=card.val)
+            self.remaining_weapon_sum -= card.val
 
         self.dungeon.can_avoid = False
         self.dungeon.discard(discard=card)
@@ -216,7 +225,10 @@ class Scoundrel():
             current_room=self.dungeon.current_room,
             num_cards_remaining=self.dungeon.cards_remaining(),
             can_avoid=self.dungeon.can_avoid,
-            can_heal=self.dungeon.can_heal
+            can_heal=self.dungeon.can_heal,
+            remaining_monster_sum=self.remaining_monster_sum,
+            remaining_health_potion_sum=self.remaining_health_potion_sum,
+            remaining_weapon_sum=self.remaining_weapon_sum,
         )
     
     def take_action(self, action: str) -> None:

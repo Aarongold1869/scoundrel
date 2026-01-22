@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from scoundrel.scoundrel import Card, Dungeon, Weapon, Scoundrel, UI, SUITS, CARD_VALUES
+from ..scoundrel import Card, Dungeon, Weapon, Scoundrel, UI, SUITS, CARD_VALUES
 
 
 class TestCard:

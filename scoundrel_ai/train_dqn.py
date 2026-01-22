@@ -9,11 +9,47 @@ from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewardThreshold
 from stable_baselines3.common.monitor import Monitor
 import gymnasium as gym
-from scoundrel_ai.scoundrel_env import ScoundrelEnv
+from scoundrel_ai.scoundrel_env import ScoundrelEnv, StrategyLevel
 import os
+import glob
+import glob
 
 
-def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_dqn"):
+def get_tensorboard_log_name(algorithm, strategy_level, timesteps):
+    """Generate tensorboard log directory name with iteration number
+    
+    Format: {ALGORITHM}_{STRATEGY}_{timesteps}k_{iteration}
+    Example: DQN_EXPERT_100k_1
+    """
+    # Convert strategy level to name
+    if isinstance(strategy_level, int):
+        strategy_level = StrategyLevel(strategy_level)
+    strategy_name = strategy_level.name  # BASIC, INTERMEDIATE, ADVANCED, EXPERT
+    
+    # Format timesteps (100000 -> 100k, 1000000 -> 1000k)
+    timesteps_k = f"{timesteps // 1000}k"
+    
+    # Find next iteration number
+    pattern = f"./scoundrel_ai/tensorboard_logs/{algorithm.upper()}_{strategy_name}_{timesteps_k}_*"
+    existing_dirs = glob.glob(pattern)
+    
+    if not existing_dirs:
+        iteration = 1
+    else:
+        # Extract iteration numbers and find max
+        iterations = []
+        for dir_path in existing_dirs:
+            try:
+                iter_num = int(dir_path.split('_')[-1])
+                iterations.append(iter_num)
+            except (ValueError, IndexError):
+                pass
+        iteration = max(iterations) + 1 if iterations else 1
+    
+    return f"./scoundrel_ai/tensorboard_logs/{algorithm.upper()}_{strategy_name}_{timesteps_k}_{iteration}"
+
+
+def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_dqn", strategy_level=StrategyLevel.EXPERT):
     """Train a DQN agent on Scoundrel"""
     
     # Create directories
@@ -21,7 +57,7 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     os.makedirs("scoundrel_ai/logs", exist_ok=True)
     
     # Create the environment
-    env = ScoundrelEnv()
+    env = ScoundrelEnv(strategy_level=strategy_level)
     env = Monitor(env, "scoundrel_ai/logs", info_keywords=())
     
     # Validate the environment
@@ -30,8 +66,12 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     print("Environment check passed!")
     
     # Create evaluation environment
-    eval_env = ScoundrelEnv()
+    eval_env = ScoundrelEnv(strategy_level=strategy_level)
     eval_env = Monitor(eval_env, info_keywords=())
+    
+    # Generate tensorboard log directory name
+    tensorboard_log_dir = get_tensorboard_log_name("dqn", strategy_level, total_timesteps)
+    print(f"Tensorboard logs will be saved to: {tensorboard_log_dir}")
     
     # Create callbacks
     eval_callback = EvalCallback(
@@ -61,7 +101,7 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
         exploration_initial_eps=1.0,
         exploration_final_eps=0.1,  # Keep some exploration
         verbose=1,
-        tensorboard_log="./scoundrel_ai/tensorboard_logs/",
+        tensorboard_log=tensorboard_log_dir,
         policy_kwargs=dict(net_arch=[256, 256])  # Larger network
     )
     
@@ -81,21 +121,25 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     return model
 
 
-def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_ppo"):
+def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_ppo", strategy_level=StrategyLevel.EXPERT):
     """Train a PPO agent on Scoundrel (alternative algorithm)"""
     
     os.makedirs(save_path, exist_ok=True)
     os.makedirs("scoundrel_ai/logs", exist_ok=True)
     
-    env = ScoundrelEnv()
+    env = ScoundrelEnv(strategy_level=strategy_level)
     env = Monitor(env, "scoundrel_ai/logs", info_keywords=())
     
     print("Checking environment...")
     check_env(env, warn=True)
     print("Environment check passed!")
     
-    eval_env = ScoundrelEnv()
+    eval_env = ScoundrelEnv(strategy_level=strategy_level)
     eval_env = Monitor(eval_env, info_keywords=())
+    
+    # Generate tensorboard log directory name
+    tensorboard_log_dir = get_tensorboard_log_name("ppo", strategy_level, total_timesteps)
+    print(f"Tensorboard logs will be saved to: {tensorboard_log_dir}")
     
     eval_callback = EvalCallback(
         eval_env,
@@ -118,7 +162,7 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
         gae_lambda=0.95,
         clip_range=0.2,
         verbose=1,
-        tensorboard_log="./scoundrel_ai/tensorboard_logs/"
+        tensorboard_log=tensorboard_log_dir
     )
     
     print(f"\nTraining for {total_timesteps} timesteps...")
@@ -208,14 +252,17 @@ if __name__ == "__main__":
                         help="Path to model for evaluation")
     parser.add_argument("--episodes", type=int, default=10,
                         help="Number of episodes for evaluation")
+    parser.add_argument("--strategy-level", type=int, default=4,
+                        help="Strategy level: 1=BASIC, 2=INTERMEDIATE, 3=ADVANCED, 4=EXPERT (default)")
     
     args = parser.parse_args()
     
     if args.mode == "train":
+        strategy_level = StrategyLevel(args.strategy_level)
         if args.algorithm == "dqn":
-            train_dqn(total_timesteps=args.timesteps)
+            train_dqn(total_timesteps=args.timesteps, strategy_level=strategy_level)
         elif args.algorithm == "ppo":
-            train_ppo(total_timesteps=args.timesteps)
+            train_ppo(total_timesteps=args.timesteps, strategy_level=strategy_level)
     else:
         if args.model_path is None:
             print("Error: --model-path is required for evaluation mode")
