@@ -35,6 +35,21 @@ class Card():
         self.id = id
 
 
+class DungeonState(TypedDict):
+    cards_remaining: int
+    monsters_remaining: int
+    monster_strength_remaining: int
+    weapons_remaining: int
+    weapon_strength_remaining: int
+    potions_remaining: int
+    potion_strength_remaining: int
+
+class RoomState(TypedDict):
+    cards_remaining: int
+    cards: List[Card]
+    can_avoid: int
+    can_heal: int
+
 class Dungeon():
     
     def __init__(self):
@@ -48,6 +63,12 @@ class Dungeon():
                 i += 1
 
         self.shuffle()
+        self.monsters_remaining = 26
+        self.monster_strength_remaining = 208
+        self.weapons_remaining = 9
+        self.weapon_strength_remaining = 54
+        self.potions_remaining = 9
+        self.potion_strength_remaining = 54
         self.current_room = self.cards[:4]
         self.can_avoid = True
         self.can_heal = True
@@ -65,6 +86,7 @@ class Dungeon():
         return len(self.cards)
 
     def discard(self, discard: Card):
+
         self.cards = list(filter(lambda card: card.id != discard.id, self.cards))
         self.current_room = list(filter(lambda card: card.id != discard.id, self.current_room))
         if len(self.current_room) == 1 and self.cards_remaining() > 1:
@@ -72,13 +94,33 @@ class Dungeon():
             self.can_avoid = True
             self.can_heal = True
 
-    def avoid_room(self ) -> None:
+    def avoid_room(self) -> None:
         if not self.can_avoid:
             raise ValueError('cannot avoid.')
         random.shuffle(self.current_room)
         self.cards = self.cards[len(self.current_room):] + self.current_room
         self.current_room = self.cards[:4]
         self.can_avoid = False
+
+    def room_state(self) -> RoomState:
+        return RoomState(
+            cards_remaining=len(self.current_room),
+            cards=self.current_room,
+            can_avoid=1 if self.can_avoid else 0,
+            can_heal=1 if self.can_heal else 0
+        )
+    
+    def dungeon_state(self) -> DungeonState:
+        return DungeonState(
+            cards_remaining=self.cards_remaining(),
+            monsters_remaining=self.monsters_remaining,
+            monster_strength_remaining=self.monster_strength_remaining,
+            weapons_remaining=self.weapons_remaining,
+            weapon_strength_remaining=self.weapon_strength_remaining,
+            potions_remaining=self.potions_remaining,
+            potion_strength_remaining=self.potion_strength_remaining
+        )
+
         
 
 class Weapon():
@@ -103,36 +145,32 @@ class UI(Enum):
     API = 'api'
 
 
-class GameState(TypedDict):
-    is_active: bool
-    score: int
+class PlayerState(TypedDict):
     hp: int
     weapon_level: int
     weapon_max_monster_level: int
-    current_room: List[Card]
-    num_cards_remaining: int
-    can_avoid: bool
-    can_heal: bool
-    remaining_monster_sum: int
-    remaining_health_potion_sum: int
-    remaining_weapon_sum: int
-    
+
+
+class GameState(TypedDict):
+    is_active: bool
+    score: int
+    player_state: PlayerState
+    dungeon_state: DungeonState
+    room_state: RoomState
+
 
 class Scoundrel():
 
     def __init__(self, ui: UI = UI.CLI):
         self.ui = ui
-        self.remaining_monster_sum = 208
-        self.remaining_health_potion_sum = 54
-        self.remaining_weapon_sum = 54
-        self.hp = 20
-        self.score = (self.remaining_monster_sum * -1) + self.hp
         self.dungeon = Dungeon()
+        self.hp = 20
+        self.score = (self.dungeon.monster_strength_remaining * -1) + self.hp
         self.weapon = Weapon(level=0)
         self.game_is_active = True
 
     def update_score(self):
-        self.score = (self.remaining_monster_sum * -1) + self.hp
+        self.score = (self.dungeon.monster_strength_remaining * -1) + self.hp
 
     def update_hp(self, val: int):
         self.hp += val
@@ -196,19 +234,22 @@ class Scoundrel():
 
             self.fight_monster(monster_level=card.val,
                                        use_weapon=use_weapon)
-            self.remaining_monster_sum -= card.val
+            self.dungeon.monsters_remaining -= 1
+            self.dungeon.monster_strength_remaining -= card.val
                     
         elif card.suit['class'] == 'health':
             # print(f'Health potion: {card.val}')
             if self.dungeon.can_heal:
                 self.update_hp(val=card.val)
             self.dungeon.can_heal = False
-            self.remaining_health_potion_sum -= card.val
+            self.dungeon.potions_remaining -= 1
+            self.dungeon.potion_strength_remaining -= card.val
 
         elif card.suit['class'] == 'weapon':
             # print(f'Equip weapon: {card.val}')
             self.equip_weapon(weapon_level=card.val)
-            self.remaining_weapon_sum -= card.val
+            self.dungeon.weapons_remaining -= 1
+            self.dungeon.weapon_strength_remaining -= card.val
 
         self.dungeon.can_avoid = False
         self.dungeon.discard(discard=card)
@@ -219,16 +260,13 @@ class Scoundrel():
         return GameState(
             is_active=self.game_is_active,
             score=self.score,
-            hp=self.hp,
-            weapon_level=self.weapon.level,
-            weapon_max_monster_level=self.weapon.max_monster_level,
-            current_room=self.dungeon.current_room,
-            num_cards_remaining=self.dungeon.cards_remaining(),
-            can_avoid=self.dungeon.can_avoid,
-            can_heal=self.dungeon.can_heal,
-            remaining_monster_sum=self.remaining_monster_sum,
-            remaining_health_potion_sum=self.remaining_health_potion_sum,
-            remaining_weapon_sum=self.remaining_weapon_sum,
+            player_state=PlayerState(
+                hp=self.hp,
+                weapon_level=self.weapon.level,
+                weapon_max_monster_level=self.weapon.max_monster_level
+            ),
+            dungeon_state=self.dungeon.dungeon_state(),
+            room_state=self.dungeon.room_state()
         )
     
     def take_action(self, action: str) -> None:

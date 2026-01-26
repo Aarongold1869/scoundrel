@@ -8,12 +8,19 @@ from stable_baselines3 import DQN, PPO, A2C
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewardThreshold
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
+
+from sb3_contrib.common.wrappers import ActionMasker
+from sb3_contrib import MaskablePPO
+
 import gymnasium as gym
+from gymnasium.wrappers import FlattenObservation
 from scoundrel_ai.scoundrel_env import ScoundrelEnv, StrategyLevel
 import os
 import glob
 import json
 from datetime import datetime
+
 
 
 def get_tensorboard_log_name(algorithm, strategy_level, timesteps):
@@ -134,16 +141,36 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
     
     os.makedirs(save_path, exist_ok=True)
     os.makedirs("scoundrel_ai/logs", exist_ok=True)
+
+    def mask_fn(env: gym.Env):
+        # Unwrap to get the base ScoundrelEnv
+        while hasattr(env, 'env'):
+            env = env.env
+        return env.action_masks()
     
     env = ScoundrelEnv(strategy_level=strategy_level)
+    env = ActionMasker(env, mask_fn)  # Apply ActionMasker first
     env = Monitor(env, "scoundrel_ai/logs", info_keywords=())
+    env = FlattenObservation(env)
     
-    print("Checking environment...")
-    check_env(env, warn=True)
+    # Wrap in DummyVecEnv for VecNormalize compatibility
+    env = DummyVecEnv([lambda: env])
+    env = VecNormalize(env, norm_obs=True, norm_reward=False, clip_obs=10.0)
+    
+    print("Checking environment (non-vectorized version)...")
+    test_env = ScoundrelEnv(strategy_level=strategy_level)
+    test_env = ActionMasker(test_env, mask_fn)
+    test_env = Monitor(test_env, info_keywords=())
+    test_env = FlattenObservation(test_env)
+    check_env(test_env, warn=True)
     print("Environment check passed!")
     
     eval_env = ScoundrelEnv(strategy_level=strategy_level)
+    eval_env = ActionMasker(eval_env, mask_fn)  # Apply ActionMasker first
     eval_env = Monitor(eval_env, info_keywords=())
+    eval_env = FlattenObservation(eval_env)
+    eval_env = DummyVecEnv([lambda: eval_env])
+    eval_env = VecNormalize(eval_env, norm_obs=True, norm_reward=False, clip_obs=10.0, training=False)
     
     # Generate tensorboard log directory name
     tensorboard_log_dir = get_tensorboard_log_name("ppo", strategy_level, total_timesteps)
@@ -159,7 +186,7 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
     )
     
     print("\nInitializing PPO agent...")
-    model = PPO(
+    model = MaskablePPO(
         "MlpPolicy",
         env,
         learning_rate=3e-4,
@@ -184,6 +211,10 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
     model.save(f"{save_path}/final_model")
     print(f"\nModel saved to {save_path}/final_model")
     
+    # Save VecNormalize statistics
+    env.save(f"{save_path}/vec_normalize.pkl")
+    print(f"VecNormalize stats saved to {save_path}/vec_normalize.pkl")
+    
     # Write tensorboard model name to text file
     tensorboard_name = os.path.basename(tensorboard_log_dir)
     model_name_file = f"{save_path}/model_name.txt"
@@ -196,13 +227,38 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
 
 def evaluate_model(model_path, episodes=10):
     """Evaluate a trained model"""
+    # Detect algorithm and apply appropriate wrappers
+    is_ppo = "ppo" in model_path.lower()
+    
     env = ScoundrelEnv(render_mode="human")
+    
+    # Apply wrappers for PPO (MaskablePPO requires ActionMasker and FlattenObservation)
+    if is_ppo:
+        def mask_fn(env: gym.Env):
+            while hasattr(env, 'env'):
+                env = env.env
+            return env.action_masks()
+        
+        env = ActionMasker(env, mask_fn)
+        env = FlattenObservation(env)
+        env = DummyVecEnv([lambda: env])
+        
+        # Load VecNormalize statistics if available
+        model_dir = os.path.dirname(model_path)
+        vec_normalize_path = os.path.join(model_dir, "vec_normalize.pkl")
+        if os.path.exists(vec_normalize_path):
+            env = VecNormalize.load(vec_normalize_path, env)
+            env.training = False  # Don't update stats during evaluation
+            env.norm_reward = False
+            print(f"Loaded VecNormalize stats from {vec_normalize_path}")
+        else:
+            print("Warning: No VecNormalize stats found, running without normalization")
     
     # Load the model - auto-detect algorithm
     if "dqn" in model_path.lower():
         model = DQN.load(model_path, env=env)
-    elif "ppo" in model_path.lower():
-        model = PPO.load(model_path, env=env)
+    elif is_ppo:
+        model = MaskablePPO.load(model_path, env=env)
     elif "a2c" in model_path.lower():
         model = A2C.load(model_path, env=env)
     else:
@@ -210,7 +266,7 @@ def evaluate_model(model_path, episodes=10):
         try:
             model = DQN.load(model_path, env=env)
         except:
-            model = PPO.load(model_path, env=env)
+            model = MaskablePPO.load(model_path, env=env)
 
     # Try to read model name from model_name.txt file
     model_dir = os.path.dirname(model_path)
@@ -267,7 +323,7 @@ def evaluate_model(model_path, episodes=10):
         print(f"\nEpisode {episode + 1} Results:")
         print(f"  Reward: {episode_reward:.2f}")
         print(f"  Score: {info['score']}")
-        print(f"  HP: {info['hp']}")
+        print(f"  HP: {info['player_state']['hp']}")
     
     print(f"\n{'='*60}")
     print(f"Evaluation Summary ({episodes} episodes):")

@@ -44,7 +44,113 @@ class ScoundrelEnv(gym.Env):
         # Define action space
         # Actions: 0-3 = interact with card 1-4, 4 = avoid room
         self.action_space = spaces.Discrete(5)
+
+        # low_bounds = np.zeros(45, dtype=np.float32)
+        # # low_bounds[41] = -10  # Danger level: min when weapon 10, monster 0
         
+        # self.observation_space = spaces.Box(
+        #     low=low_bounds,
+        #     high=300,  # Max value to accommodate sum of card values (monsters ~208, weapons/health ~54 each)
+        #     shape=(45,),  # Extended observation space with survivability, threat, and temporal metrics
+        #     dtype=np.float32
+        # )
+
+        player_space = spaces.Dict({
+            "hp": spaces.Box(low=0, high=20, shape=(1,), dtype=np.float32),
+            "weapon_level": spaces.Box(low=0, high=10, shape=(1,), dtype=np.float32),
+            "weapon_max_monster_level": spaces.Box(low=0, high=15, shape=(1,), dtype=np.float32),
+        })
+
+        card_space = spaces.Box(
+            low=np.tile([0, 0], (4, 1)).astype(np.float32),
+            high=np.tile([3, 14], (4, 1)).astype(np.float32),
+            dtype=np.float32
+        )
+        
+        room_context_space = spaces.Dict({
+            "cards_remaining": spaces.Box(low=0, high=4, shape=(1,), dtype=np.float32),
+            "can_heal": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
+            "can_avoid": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
+        })
+
+        deck_context_space = spaces.Dict({
+            "cards_remaining": spaces.Box(low=0, high=44, shape=(1,), dtype=np.float32),
+            "monsters_remaining": spaces.Box(low=0, high=26, shape=(1,), dtype=np.float32),
+            "monster_strength_remaining": spaces.Box(low=0, high=208, shape=(1,), dtype=np.float32),
+            "weapons_remaining": spaces.Box(low=0, high=13, shape=(1,), dtype=np.float32),
+            "weapon_strength_remaining": spaces.Box(low=0, high=54, shape=(1,), dtype=np.float32),
+            "potions_remaining": spaces.Box(low=0, high=13, shape=(1,), dtype=np.float32),
+            "potion_strength_remaining": spaces.Box(low=0, high=54, shape=(1,), dtype=np.float32),
+        })
+
+        self.observation_space = spaces.Dict({
+            "player": player_space,
+            "room_cards": card_space,
+            "room": room_context_space,
+            "deck": deck_context_space,
+        })
+
+
+    def _encode_room_cards(self, cards: List[Card]) -> np.ndarray:
+        """
+        Returns a (4, 2) array:
+        [
+        [type_id, value],
+        ...
+        ]
+        type_id:
+        0 = empty / resolved
+        1 = monster
+        2 = weapon
+        3 = potion
+        """
+        CARD_TYPE_MAP = {
+            "monster": 1,
+            "weapon":  2,
+            "health":  3,
+        }
+
+        encoded = np.zeros((4, 2), dtype=np.float32)
+
+        for i in range(4):
+            if i >= len(cards):
+                # Should not happen often, but keeps shape stable
+                continue
+
+            card = cards[i]
+            encoded[i, 0] = CARD_TYPE_MAP[card.suit['class']]
+            encoded[i, 1] = card.val
+
+        return encoded
+        
+    def _get_obs(self):
+        """Convert game state to observation space"""
+        # Use the game's current_game_state method
+        game_state: GameState = self.game.current_game_state()
+        return {
+            "player": {
+                "hp": np.array([game_state['player_state']['hp']], dtype=np.float32),
+                "weapon_level": np.array([game_state['player_state']['weapon_level']], dtype=np.float32),
+                "weapon_max_monster_level": np.array([game_state['player_state']['weapon_max_monster_level']], dtype=np.float32),
+            },
+            "room_cards": self._encode_room_cards(cards=game_state['room_state']['cards']),
+            "room": {
+                "cards_remaining": np.array([game_state['room_state']['cards_remaining']], dtype=np.float32),
+                "can_avoid": np.array([game_state['room_state']['can_avoid']], dtype=np.float32),
+                "can_heal": np.array([game_state['room_state']['can_heal']], dtype=np.float32),
+            },
+            "deck": {
+                "cards_remaining": np.array([game_state['dungeon_state']['cards_remaining']], dtype=np.float32),
+                "monsters_remaining": np.array([game_state['dungeon_state']['monsters_remaining']], dtype=np.float32),
+                "monster_strength_remaining": np.array([game_state['dungeon_state']['monster_strength_remaining']], dtype=np.float32),
+                "weapons_remaining": np.array([game_state['dungeon_state']['weapons_remaining']], dtype=np.float32),
+                "weapon_strength_remaining": np.array([game_state['dungeon_state']['weapon_strength_remaining']], dtype=np.float32),
+                "potions_remaining": np.array([game_state['dungeon_state']['potions_remaining']], dtype=np.float32),
+                "potion_strength_remaining": np.array([game_state['dungeon_state']['potion_strength_remaining']], dtype=np.float32)
+            },
+        }
+
+    def _get_obs_old(self):
         '''
         Define observation space
         We need to encode the game state:
@@ -93,19 +199,6 @@ class ScoundrelEnv(gym.Env):
         # Most features are non-negative, but some can be negative:
         # - obs[41]: Danger level (can be negative when weapon > monster)
         '''
-
-        low_bounds = np.zeros(45, dtype=np.float32)
-        # low_bounds[41] = -10  # Danger level: min when weapon 10, monster 0
-        
-        self.observation_space = spaces.Box(
-            low=low_bounds,
-            high=300,  # Max value to accommodate sum of card values (monsters ~208, weapons/health ~54 each)
-            shape=(45,),  # Extended observation space with survivability, threat, and temporal metrics
-            dtype=np.float32
-        )
-        
-    def _get_obs(self):
-        """Convert game state to observation vector"""
         # Use the game's current_game_state method
         game_state: GameState = self.game.current_game_state()
         
@@ -116,15 +209,25 @@ class ScoundrelEnv(gym.Env):
         obs[1] = game_state['hp'] / 20.0  # Normalized HP ratio
         obs[2] = game_state['weapon_level']
         obs[3] = game_state['weapon_max_monster_level']
-        obs[4] = game_state['num_cards_remaining']
-        obs[5] = (44 - game_state['num_cards_remaining']) / 44.0  # Progress ratio
-        obs[6] = 1.0 if game_state['can_avoid'] else 0.0
-        obs[7] = 1.0 if game_state['can_heal'] else 0.0
+        # Temporal Features (3 features) - indices 46-48
+        obs[4] = game_state['dungeon_state']['cards_remaining']
+        progress_ratio = (44 - game_state['dungeon_state']['cards_remaining']) / 44.0  # Progress ratio
+        # Game phase discrete (early/mid/late)
+        if progress_ratio < 0.33:
+            game_phase = 0.0  # Early game
+        elif progress_ratio < 0.66:
+            game_phase = 0.5  # Mid game
+        else:
+            game_phase = 1.0  # Late game
+        obs[5] = game_phase
+        obs[6] = progress_ratio  # Progress ratio
+        obs[7] = 1.0 if game_state['can_avoid'] else 0.0
+        obs[8] = 1.0 if game_state['can_heal'] else 0.0
         
         # Remaining cards in deck by type (sum of values) - from GameState
-        obs[8] = game_state['remaining_monster_sum']
-        obs[9] = game_state['remaining_weapon_sum']
-        obs[10] = game_state['remaining_health_potion_sum']
+        obs[9] = game_state['remaining_monster_sum']
+        obs[10] = game_state['remaining_weapon_sum']
+        obs[11] = game_state['remaining_health_potion_sum']
         
         # Analyze current room (3 features)
         current_room: List[Card] = game_state['current_room']
@@ -151,9 +254,9 @@ class ScoundrelEnv(gym.Env):
         health_potion_values.sort(reverse=True)
         total_healing = sum(health_potion_values[:2])
         
-        obs[11] = total_monster_strength
-        obs[12] = total_weapon_strength
-        obs[13] = total_healing
+        obs[12] = total_monster_strength
+        obs[13] = total_weapon_strength
+        obs[14] = total_healing
         
         # Encode individual cards with weapon efficiency (24 features)
         class_encoding = {'weapon': 0, 'health': 1, 'monster': 2}
@@ -178,7 +281,7 @@ class ScoundrelEnv(gym.Env):
             return efficiency
         
         for i in range(4):
-            base_idx = 14 + (i * 6)
+            base_idx = 15 + (i * 6)
             if i < len(current_room):
                 card = current_room[i]
                 obs[base_idx] = class_encoding[card.suit['class']]
@@ -217,8 +320,8 @@ class ScoundrelEnv(gym.Env):
         min_hp_after = hp + total_healing + most_powerful_available_weapon - monster_strength_less_equipped_weapon
         min_hp_after = min(min_hp_after, 20)
         
-        obs[39] = 1.0 if min_hp_after > 0 else 0.0  # Can survive room
-        obs[40] = max(min_hp_after, 0.0)  # Minimum HP after clear
+        obs[40] = 1.0 if min_hp_after > 0 else 0.0  # Can survive room
+        obs[41] = max(min_hp_after, 0.0)  # Minimum HP after clear
 
         # danger_current_weapon = max_monster_strength
         # if weapon_max > max_monster_strength:
@@ -245,42 +348,24 @@ class ScoundrelEnv(gym.Env):
         # Threat Assessment (1 feature) - index 45
         # Monster threat ratio
         if hp > 0 and total_monster_strength > 0:
-            obs[41] = total_monster_strength / hp
+            obs[42] = total_monster_strength / hp
         else:
-            obs[41] = 0.0
+            obs[42] = 0.0
         
-        # Temporal Features (3 features) - indices 46-48
-        # Game phase discrete (early/mid/late)
-        progress = (44 - game_state['num_cards_remaining']) / 44.0
-        if progress < 0.33:
-            game_phase = 0.0  # Early game
-        elif progress < 0.66:
-            game_phase = 0.5  # Mid game
-        else:
-            game_phase = 1.0  # Late game
-        obs[42] = game_phase
-        # Game progress continuous (0.0 to 1.0)
-        obs[43] = progress
         
         # Resource scarcity (ratio of remaining resources to total cards)
         remaining_resource_value = game_state['remaining_weapon_sum'] + game_state['remaining_health_potion_sum']
         total_remaining_value = (game_state['remaining_monster_sum'] + 
                                 game_state['remaining_weapon_sum'] + 
                                 game_state['remaining_health_potion_sum'])
-        obs[44] = remaining_resource_value / max(total_remaining_value, 1)
+        obs[43] = remaining_resource_value / max(total_remaining_value, 1)
         
         return obs
     
     def _get_info(self):
         """Return auxiliary information"""
         game_state = self.game.current_game_state()
-        return {
-            "score": game_state['score'],
-            "hp": game_state['hp'],
-            "cards_remaining": game_state['num_cards_remaining'],
-            "weapon_level": game_state['weapon_level'],
-            "is_active": game_state['is_active']
-        }
+        return game_state
     
     def reset(self, seed=None, options=None):
         """Reset the environment to initial state"""
@@ -297,6 +382,18 @@ class ScoundrelEnv(gym.Env):
         info = self._get_info()
         
         return observation, info
+    
+    def action_masks(self):
+        """Return action mask for current state. Required by ActionMasker wrapper."""
+        game_state = self.game.current_game_state()
+        room_cards_remaining = game_state['room_state']['cards_remaining']
+        return np.array([
+            room_cards_remaining > 0,
+            room_cards_remaining > 1,
+            room_cards_remaining > 2,
+            room_cards_remaining > 3,
+            game_state['room_state']['can_avoid'],
+        ], dtype=np.bool_)
     
     def basic_strategy(
             self,
@@ -329,22 +426,22 @@ class ScoundrelEnv(gym.Env):
         reward += score_change * 10.0
         
         # HP Changes
-        hp_change = new_state['hp'] - prev_state['hp']
+        hp_change = new_state['player_state']['hp'] - prev_state['player_state']['hp']
         if hp_change > 0:
             reward += hp_change * 2.0
 
         elif hp_change < 0:
             reward += hp_change * 1.5  # Taking damage is bad
             # Extra penalty for taking damage when low HP
-            if prev_state['hp'] < 8:
+            if prev_state['player_state']['hp'] < 8:
                 reward -= 5.0
         
         # Survival bonus - reward maintaining healthy HP
-        if new_state['hp'] >= 15:
-            reward += 0.3  # Small constant bonus for good health
+        if new_state['player_state']['hp'] >= 15:
+            reward += 1.0  # Small constant bonus for good health
 
         # Progress & Actions
-        cards_change = prev_state['num_cards_remaining'] - new_state['num_cards_remaining']
+        cards_change = prev_state['dungeon_state']['cards_remaining'] - new_state['dungeon_state']['cards_remaining']
         if cards_change > 0:
             reward += 1.5  # Making progress is good
 
@@ -361,17 +458,17 @@ class ScoundrelEnv(gym.Env):
         '''
         === INTERMEDIATE STRATEGIES (Resource Management) ===
             
-            Weapon Acquisition:
-                - Acquiring weapon: +weapon_level
-            
-            Basic Potion Usage:
-                - First potion in room: +hp_change * 2.0 + bonus(+2.0 if HP < 10)
-                - Additional potions in room: -potion_value * 2.0 (waste penalty)
-                - Over-healing penalty: -wasted_healing * 1.5
-                    - Example: Using level 10 potion at 18/20 HP wastes 8 healing → -12.0 penalty
-            
-            Monster Fighting:
-                - Minimal damage taken (< 5 HP): +1.0
+        Weapon Acquisition:
+            - Acquiring weapon: +weapon_level
+        
+        Basic Potion Usage:
+            - First potion in room: +hp_change * 2.0 + bonus(+2.0 if HP < 10)
+            - Additional potions in room: -potion_value * 2.0 (waste penalty)
+            - Over-healing penalty: -wasted_healing * 1.5
+                - Example: Using level 10 potion at 18/20 HP wastes 8 healing → -12.0 penalty
+        
+        Monster Fighting:
+            - Minimal damage taken (< 5 HP): +1.0
         '''
         reward = 0
 
@@ -381,7 +478,7 @@ class ScoundrelEnv(gym.Env):
             new_weapon_level = new_state['weapon_level']
             reward += new_weapon_level  # Getting weapons is critical
             # Bonus for picking up weapons early
-            if prev_state['num_cards_remaining'] > 30:
+            if prev_state['dungeon_state']['cards_remaining'] > 30:
                 reward += 5.0  # Early weapon pickup is excellent
 
         # Basic Potion Usage
@@ -426,22 +523,22 @@ class ScoundrelEnv(gym.Env):
         '''
         === ADVANCED STRATEGIES (Strategic Optimization) ===
 
-            Weapon Waste Prevention:
-                - Replacing weapon with high strength (>80%): -old_weapon_level * 2.0
-                - Replacing weapon with medium strength (>60%): -old_weapon_level * 1.0
-                - Example: Discarding unused level 10 weapon → -20.0 penalty
-            
-            Weapon Efficiency Optimization:
-                - Weapon used on high-level monster (80%+ of weapon max): +10.0
-                - Weapon used on medium-level monster (60-80%): +5.0
-                - Weapon used on low-level monster (40-60%): +1.0
-                - Weapon wasted on weak monster (<40%): -5.0
-            
-            # Early Game Conservation:
-            #     - Fighting monster without weapon in early game: +4.0 (weapon conservation) 
-            #         - Acceptable HP trade (damage ≤ monster_value): +2.0
-            #         - Poor HP trade (damage > monster_value): -3.0
-            #         - Strategy: Save weapons for late game by using HP as resource
+        Weapon Waste Prevention:
+            - Replacing weapon with high strength (>80%): -old_weapon_level * 2.0
+            - Replacing weapon with medium strength (>60%): -old_weapon_level * 1.0
+            - Example: Discarding unused level 10 weapon → -20.0 penalty
+        
+        Weapon Efficiency Optimization:
+            - Weapon used on high-level monster (80%+ of weapon max): +10.0
+            - Weapon used on medium-level monster (60-80%): +5.0
+            - Weapon used on low-level monster (40-60%): +1.0
+            - Weapon wasted on weak monster (<40%): -5.0
+        
+        # Early Game Conservation:
+        #     - Fighting monster without weapon in early game: +4.0 (weapon conservation) 
+        #         - Acceptable HP trade (damage ≤ monster_value): +2.0
+        #         - Poor HP trade (damage > monster_value): -3.0
+        #         - Strategy: Save weapons for late game by using HP as resource
         '''
         reward = 0
 
@@ -502,7 +599,7 @@ class ScoundrelEnv(gym.Env):
             
         #     # Early game weapon conservation strategy
         #     if not had_weapon:
-        #         if prev_state['num_cards_remaining'] >= 40:
+        #         if prev_state['dungeon_state']['cards_remaining'] >= 40:
         #             # Fighting without weapon is good strategy early game
         #             reward += 4.0  # Bonus for weapon conservation
                     
@@ -538,25 +635,25 @@ class ScoundrelEnv(gym.Env):
         '''
         === EXPERT STRATEGIES (Complex Situational Play) ===
             
-            Strategic Avoidance - Survival:
-                - Avoiding unbeatable room (net HP after room ≤ 0): +8.0
-                - Avoiding risky room (low HP or near-death): +2.0
-                - Avoiding survivable room (wasteful): -3.0
-            
-            Strategic Avoidance - Endgame Preservation:
-                - Avoiding resource-heavy room early game: +5.0
-                    * Conditions: cards>25, HP≥12, has weapon
-                    * Resource-heavy: no monsters OR 1 weak monster (val 2-4)
-                - Avoiding resource-heavy room mid game: +2.0
-                    * Conditions: cards>15, HP≥10
-                - Strategy: Save safe resource rooms for critical late-game moments
-            
-            Carryover Optimization:
-                - Health potion carryover when low HP: +3.0 to +5.0 (based on healing value)
-                - Weapon carryover to avoid degradation: +2.0 to +4.0 (based on weapon level)
-                - High-level monster carryover when weapon weak: +3.0 to +5.0
-                - Low-level monster carryover with strong weapon: +2.0 to +4.0 (preserve weapon)
-                - Poor carryover choice: -2.0 to -4.0
+        Strategic Avoidance - Survival:
+            - Avoiding unbeatable room (net HP after room ≤ 0): +8.0
+            - Avoiding risky room (low HP or near-death): +2.0
+            - Avoiding survivable room (wasteful): -3.0
+        
+        Strategic Avoidance - Endgame Preservation:
+            - Avoiding resource-heavy room early game: +5.0
+                * Conditions: cards>25, HP≥12, has weapon
+                * Resource-heavy: no monsters OR 1 weak monster (val 2-4)
+            - Avoiding resource-heavy room mid game: +2.0
+                * Conditions: cards>15, HP≥10
+            - Strategy: Save safe resource rooms for critical late-game moments
+        
+        # Carryover Optimization:
+        #     - Health potion carryover when low HP: +3.0 to +5.0 (based on healing value)
+        #     - Weapon carryover to avoid degradation: +2.0 to +4.0 (based on weapon level)
+        #     - High-level monster carryover when weapon weak: +3.0 to +5.0
+        #     - Low-level monster carryover with strong weapon: +2.0 to +4.0 (preserve weapon)
+        #     - Poor carryover choice: -2.0 to -4.0
         '''
         reward = 0
 
@@ -604,10 +701,10 @@ class ScoundrelEnv(gym.Env):
             
             if is_resource_heavy:
                 # Room is resource-heavy - valuable to save for endgame
-                if prev_state['num_cards_remaining'] > 25 and prev_state['hp'] >= 12 and prev_state['weapon_level'] > 0:
+                if prev_state['dungeon_state']['cards_remaining'] > 25 and prev_state['hp'] >= 12 and prev_state['weapon_level'] > 0:
                     # Early game + good condition = excellent strategic avoidance
                     reward += 5.0  # Save this room for endgame!
-                elif prev_state['num_cards_remaining'] > 15 and prev_state['hp'] >= 10:
+                elif prev_state['dungeon_state']['cards_remaining'] > 15 and prev_state['hp'] >= 10:
                     # Mid game + decent condition = reasonable strategy
                     reward += 2.0
                 # If low HP or late game without resources, don't reward avoiding
@@ -735,6 +832,8 @@ class ScoundrelEnv(gym.Env):
         
         # Map numeric action to string action for take_action method
         # Actions: 0-3 = interact with card 1-4, 4 = avoid room
+        # Note: Action masking is handled by ActionMasker wrapper when used with MaskablePPO
+        
         action_map = {0: '1', 1: '2', 2: '3', 3: '4', 4: 'a'}
         action_str = action_map.get(action)
         
@@ -762,12 +861,12 @@ class ScoundrelEnv(gym.Env):
         new_state = self.game.current_game_state()
 
         # Determine what type of card was interacted with
-        cards_change = prev_state['num_cards_remaining'] - new_state['num_cards_remaining']
+        cards_change = prev_state['dungeon_state']['cards_remaining'] - new_state['dungeon_state']['cards_remaining']
         card_interacted = None
         if cards_change > 0 and action_str != 'a':
             card_idx = int(action_str) - 1
-            if card_idx < len(prev_state['current_room']):
-                card_interacted = prev_state['current_room'][card_idx]
+            if card_idx < new_state['room_state']['cards_remaining']:
+                card_interacted = prev_state['room_state']['cards'][card_idx]
         
         # ===== REWARD SHAPING =====
 
@@ -776,23 +875,23 @@ class ScoundrelEnv(gym.Env):
                                       prev_state=prev_state,
                                       new_state=new_state)
         
-        if self.strategy_level >= StrategyLevel.INTERMEDIATE:
-            reward += self.intermediate_strategy(action_str=action_str,
-                                                card_interacted=card_interacted,
-                                                prev_state=prev_state,
-                                                new_state=new_state)
+        # if self.strategy_level >= StrategyLevel.INTERMEDIATE:
+        #     reward += self.intermediate_strategy(action_str=action_str,
+        #                                         card_interacted=card_interacted,
+        #                                         prev_state=prev_state,
+        #                                         new_state=new_state)
 
-        if self.strategy_level >= StrategyLevel.ADVANCED:
-            reward += self.advnaced_strategy(action_str=action_str,
-                                            card_interacted=card_interacted,
-                                            prev_state=prev_state,
-                                            new_state=new_state)
+        # if self.strategy_level >= StrategyLevel.ADVANCED:
+        #     reward += self.advnaced_strategy(action_str=action_str,
+        #                                     card_interacted=card_interacted,
+        #                                     prev_state=prev_state,
+        #                                     new_state=new_state)
             
-        if self.strategy_level == StrategyLevel.EXPERT:
-             reward += self.expert_strategy(action_str=action_str,
-                                            card_interacted=card_interacted,
-                                            prev_state=prev_state,
-                                            new_state=new_state)
+        # if self.strategy_level == StrategyLevel.EXPERT:
+        #      reward += self.expert_strategy(action_str=action_str,
+        #                                     card_interacted=card_interacted,
+        #                                     prev_state=prev_state,
+        #                                     new_state=new_state)
       
         current_room_id = id(self.game.dungeon.current_room)
         self.last_room_id = current_room_id
@@ -800,20 +899,23 @@ class ScoundrelEnv(gym.Env):
         # Check if game is over - FOCUS ON SCORE, NOT SURVIVAL
         if not new_state['is_active']:
             terminated = True
+            if new_state['score'] < 0:
+                reward -= 50
             # Normalize final score proportionally: -188 (worst) to +30 (best)
             # Map to 0-100 scale to reward higher scores even if negative
-            min_score = -188  # Worst possible score
-            max_score = 30    # Best possible score
-            normalized_score = (new_state['score'] - min_score) / (max_score - min_score)
-            # Scale to 0-100 range for meaningful reward signal
-            reward += normalized_score * 100.0
+            # min_score = -188  # Worst possible score
+            # max_score = 30    # Best possible score
+            # normalized_score = (new_state['score'] - min_score) / (max_score - min_score)
+            # # Scale to 0-100 range for meaningful reward signal
+            # reward += normalized_score * 100.0
+
         
         observation = self._get_obs()
         info = self._get_info()
         
         # Store current room cards for carryover analysis in next step
         if self.strategy_level == StrategyLevel.EXPERT:
-            self.prev_room_cards = new_state['current_room'].copy() if new_state['current_room'] else None
+            self.prev_room_cards = new_state['room_state']['cards'].copy() if new_state['room_state']['cards'] else None
         
         return observation, reward, terminated, truncated, info
     
@@ -822,11 +924,11 @@ class ScoundrelEnv(gym.Env):
         if self.render_mode == "human":
             game_state = self.game.current_game_state()
             print(f"\n{'='*50}")
-            print(f"HP: {game_state['hp']} | Score: {game_state['score']} | Weapon: {game_state['weapon_level']} ({game_state['weapon_max_monster_level']})")
-            print(f"Cards remaining: {game_state['num_cards_remaining']}")
-            print(f"Can avoid: {game_state['can_avoid']} | Can heal: {game_state['can_heal']}")
+            print(f"HP: {game_state['player_state']['hp']} | Score: {game_state['score']} | Weapon: {game_state['player_state']['weapon_level']} ({game_state['player_state']['weapon_max_monster_level']})")
+            print(f"Cards remaining: {game_state['dungeon_state']['cards_remaining']}")
+            print(f"Can avoid: {game_state['room_state']['can_avoid']} | Can heal: {game_state['room_state']['can_heal']}")
             print(f"\nCurrent Room:")
-            for i, card in enumerate(game_state['current_room']):
+            for i, card in enumerate(game_state['room_state']['cards']):
                 print(f"  [{i}] {card.symbol}{card.suit['symbol']} (val: {card.val}, class: {card.suit['class']})")
             print(f"{'='*50}\n")
     
