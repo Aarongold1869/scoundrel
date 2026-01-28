@@ -42,7 +42,7 @@ def update_scores(score: int, username: str):
 def view_high_scores():
     df = pd.read_json(HIGH_SCORES_FILE_PATH)
     if not df.empty:
-        print(df.sort_values(by='score', ascending=False).reset_index(inplace=True).head())
+        # print(df.sort_values(by='score', ascending=False).reset_index(inplace=True))
 
         stat_df = df.groupby('name')['score'].agg(
             min='min',

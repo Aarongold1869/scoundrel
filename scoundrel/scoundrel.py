@@ -34,6 +34,12 @@ class Card():
         self.val = val
         self.id = id
 
+    def __str__(self):
+        return f"{self.symbol}{self.suit['symbol']}"
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class DungeonState(TypedDict):
     cards_remaining: int
@@ -107,7 +113,7 @@ class Dungeon():
             cards_remaining=len(self.current_room),
             cards=self.current_room,
             can_avoid=1 if self.can_avoid else 0,
-            can_heal=1 if self.can_heal else 0
+            can_heal=1 if self.can_heal else 0,
         )
     
     def dungeon_state(self) -> DungeonState:
@@ -122,7 +128,6 @@ class Dungeon():
         )
 
         
-
 class Weapon():
 
     def __init__(self, level: int):
@@ -152,10 +157,14 @@ class PlayerState(TypedDict):
 
 
 class GameState(TypedDict):
+    # game data 
     is_active: bool
     score: int
+    # player data 
     player_state: PlayerState
+    # dungeon data
     dungeon_state: DungeonState
+    # room data
     room_state: RoomState
 
 
@@ -230,7 +239,7 @@ class Scoundrel():
                     use_weapon = self.use_weapon_cli(card=card)
             
             else: 
-                use_weapon = card.val < self.weapon.level
+                use_weapon = card.val < self.weapon.max_monster_level
 
             self.fight_monster(monster_level=card.val,
                                        use_weapon=use_weapon)
@@ -257,14 +266,13 @@ class Scoundrel():
         self.game_is_active = self.hp > 0 and self.dungeon.cards_remaining() > 0
 
     def current_game_state(self) -> GameState:
+        player_state = PlayerState(hp=self.hp,
+                                   weapon_level=self.weapon.level,
+                                   weapon_max_monster_level=self.weapon.max_monster_level)
         return GameState(
             is_active=self.game_is_active,
             score=self.score,
-            player_state=PlayerState(
-                hp=self.hp,
-                weapon_level=self.weapon.level,
-                weapon_max_monster_level=self.weapon.max_monster_level
-            ),
+            player_state=player_state,
             dungeon_state=self.dungeon.dungeon_state(),
             room_state=self.dungeon.room_state()
         )
@@ -283,7 +291,7 @@ class Scoundrel():
             
             except Exception as e:
                 # print('invalid action')
-                raise ValueError('invalid action')
+                raise ValueError(f'invalid action: {action}. {e}')
 
         elif action == "a":
             self.dungeon.avoid_room()
@@ -293,7 +301,7 @@ class Scoundrel():
 
         else:
             # print('invalid action')
-            raise ValueError('invalid action')
+            raise ValueError(f'invalid action: {action}.')
 
     def play(self):
         if self.ui == UI.CLI:

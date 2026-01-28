@@ -503,3 +503,291 @@ class TestIntegration:
                 scoundrel.dungeon.discard(card)
         
         assert scoundrel.dungeon.cards_remaining() == initial_count - 10
+
+
+class TestGameState:
+    """Test the current_game_state() method and game state consistency"""
+    
+    def test_initial_game_state(self):
+        """Test that initial game state has correct values"""
+        scoundrel = Scoundrel(ui=UI.API)
+        state = scoundrel.current_game_state()
+        
+        assert state['is_active'] is True
+        assert state['score'] == scoundrel.score
+        assert state['player_state']['hp'] == 20
+        assert state['player_state']['weapon_level'] == 0
+        assert state['player_state']['weapon_max_monster_level'] == 15
+        assert state['room_state']['cards_remaining'] == 4
+        assert state['dungeon_state']['cards_remaining'] == 44
+    
+    def test_game_state_after_monster_fight_no_weapon(self):
+        """Test game state changes after fighting a monster without weapon"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        # Find a monster in the room
+        monster_card = next(
+            (card for card in scoundrel.dungeon.current_room 
+             if card.suit['class'] == 'monster'),
+            None
+        )
+        
+        if monster_card:
+            state_before = scoundrel.current_game_state()
+            hp_before = scoundrel.hp
+            score_before = scoundrel.score
+            monsters_remaining_before = state_before['dungeon_state']['monsters_remaining']
+            
+            scoundrel.interact_card(monster_card)
+            
+            state_after = scoundrel.current_game_state()
+            
+            # HP should decrease by monster value
+            assert state_after['player_state']['hp'] == hp_before - monster_card.val
+            # Weapon should still be 0 (no weapon used)
+            assert state_after['player_state']['weapon_level'] == 0
+            # Monster count should decrease
+            assert state_after['dungeon_state']['monsters_remaining'] == monsters_remaining_before - 1
+            # Score should be updated
+            assert state_after['score'] != score_before - state_after['player_state']['hp']
+    
+    def test_game_state_after_monster_fight_with_weapon(self):
+        """Test game state changes after fighting a monster with a weapon"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        weapon_level = 5 
+        scoundrel.weapon = Weapon(level=weapon_level)
+
+        state_before = scoundrel.current_game_state()
+
+        assert state_before['player_state']['weapon_level'] == weapon_level
+        assert state_before['player_state']['weapon_max_monster_level'] == 15
+        hp_before = state_before['player_state']['hp']
+        assert hp_before == 20
+        
+        # Find a monster in the room
+        monster_card = next(
+            (card for card in scoundrel.dungeon.current_room 
+                if card.suit['class'] == 'monster'),
+            None
+        )
+        
+        if monster_card:
+            monsters_remaining_before = state_before['dungeon_state']['monsters_remaining']
+            
+            scoundrel.interact_card(monster_card)
+            
+            state_after = scoundrel.current_game_state()
+            
+            # HP should decrease by monster value minus weapon level
+            expected_damage = max(0, monster_card.val - weapon_level)
+            assert state_after['player_state']['hp'] == hp_before - expected_damage
+            # Weapon level should remain the same (weapon is kept)
+            assert state_after['player_state']['weapon_level'] == weapon_level
+            # Weapon max_monster_level should degrade to monster value
+            assert state_after['player_state']['weapon_max_monster_level'] == monster_card.val
+            # Monster count should decrease
+            assert state_after['dungeon_state']['monsters_remaining'] == monsters_remaining_before - 1
+    
+    def test_game_state_after_weapon_pickup(self):
+        """Test game state changes after picking up a weapon"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        # Find a weapon in the room
+        weapon_card = next(
+            (card for card in scoundrel.dungeon.current_room 
+             if card.suit['class'] == 'weapon'),
+            None
+        )
+        
+        if weapon_card:
+            state_before = scoundrel.current_game_state()
+            weapons_remaining_before = state_before['dungeon_state']['weapons_remaining']
+            weapon_strength_before = state_before['dungeon_state']['weapon_strength_remaining']
+            
+            scoundrel.interact_card(weapon_card)
+            
+            state_after = scoundrel.current_game_state()
+            
+            # Weapon level should be set to card value
+            assert state_after['player_state']['weapon_level'] == weapon_card.val
+            # Weapon max monster level should reset to 15
+            assert state_after['player_state']['weapon_max_monster_level'] == 15
+            # Weapons remaining should decrease
+            assert state_after['dungeon_state']['weapons_remaining'] == weapons_remaining_before - 1
+            # Weapon strength remaining should decrease
+            assert state_after['dungeon_state']['weapon_strength_remaining'] == weapon_strength_before - weapon_card.val
+    
+    def test_game_state_after_healing(self):
+        """Test game state changes after using a health potion"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        # Take some damage first
+        scoundrel.update_hp(-5)
+        hp_after_damage = scoundrel.hp
+        
+        # Find a potion in the room
+        potion_card = next(
+            (card for card in scoundrel.dungeon.current_room 
+             if card.suit['class'] == 'health'),
+            None
+        )
+        
+        if potion_card:
+            state_before = scoundrel.current_game_state()
+            potions_remaining_before = state_before['dungeon_state']['potions_remaining']
+            potion_strength_before = state_before['dungeon_state']['potion_strength_remaining']
+            
+            scoundrel.interact_card(potion_card)
+            
+            state_after = scoundrel.current_game_state()
+            
+            # HP should increase by potion value (capped at 20)
+            expected_hp = min(hp_after_damage + potion_card.val, 20)
+            assert state_after['player_state']['hp'] == expected_hp
+            # Potions remaining should decrease
+            assert state_after['dungeon_state']['potions_remaining'] == potions_remaining_before - 1
+            # Potion strength remaining should decrease
+            assert state_after['dungeon_state']['potion_strength_remaining'] == potion_strength_before - potion_card.val
+            # Can heal should be False (can only heal once per room)
+            assert state_after['room_state']['can_heal'] == 0
+    
+    def test_game_state_after_avoid_action(self):
+        """Test game state changes after avoiding a room"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        state_before = scoundrel.current_game_state()
+        can_avoid_before = state_before['room_state']['can_avoid']
+        
+        if can_avoid_before:  # Only test if avoiding is possible
+            scoundrel.take_action('a')
+            
+            state_after = scoundrel.current_game_state()
+            
+            # Can avoid should be False
+            assert state_after['room_state']['can_avoid'] == 0
+            # Room should still have cards (shuffled but same count)
+            assert state_after['room_state']['cards_remaining'] == 4
+    
+    def test_game_state_room_exhaustion(self):
+        """Test game state when room is exhausted (only 1 card remains)"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        # Clear the room until one card remains
+        while len(scoundrel.dungeon.current_room) > 1:
+            card = scoundrel.dungeon.current_room[0]
+            scoundrel.interact_card(card)
+            if not scoundrel.game_is_active:
+                break
+        
+        state = scoundrel.current_game_state()
+        if state['is_active']:
+            # When only 1 card left, new room should be drawn (4 cards from deck)
+            assert state['room_state']['cards_remaining'] == 4
+    
+    def test_game_state_when_game_ends(self):
+        """Test that is_active becomes False when game ends"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        # Play until game ends
+        max_steps = 100
+        step_count = 0
+        while scoundrel.game_is_active and step_count < max_steps:
+            try:
+                action_idx = 0
+                while action_idx < len(scoundrel.dungeon.current_room):
+                    scoundrel.take_action(str(action_idx + 1))
+                    action_idx += 1
+                    if not scoundrel.game_is_active:
+                        break
+            except ValueError:
+                break
+            step_count += 1
+        
+        state_final = scoundrel.current_game_state()
+        
+        # Game should be inactive
+        assert state_final['is_active'] is False
+        # Score should be calculated
+        assert isinstance(state_final['score'], int)
+    
+    def test_game_state_consistency_across_calls(self):
+        """Test that calling current_game_state() multiple times returns consistent data"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        state1 = scoundrel.current_game_state()
+        state2 = scoundrel.current_game_state()
+        
+        assert state1['is_active'] == state2['is_active']
+        assert state1['score'] == state2['score']
+        assert state1['player_state']['hp'] == state2['player_state']['hp']
+        assert state1['dungeon_state']['cards_remaining'] == state2['dungeon_state']['cards_remaining']
+    
+    def test_game_state_dungeon_consistency(self):
+        """Test that dungeon state totals are accurate"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        state = scoundrel.current_game_state()
+        dungeon_state = state['dungeon_state']
+        
+        # Verify initial dungeon state
+        assert dungeon_state['monsters_remaining'] == 26
+        assert dungeon_state['monster_strength_remaining'] == 208
+        assert dungeon_state['weapons_remaining'] == 9
+        assert dungeon_state['weapon_strength_remaining'] == 54
+        assert dungeon_state['potions_remaining'] == 9
+        assert dungeon_state['potion_strength_remaining'] == 54
+    
+    def test_game_state_after_multiple_actions(self):
+        """Test game state after a sequence of actions"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        state_initial = scoundrel.current_game_state()
+        cards_initial = state_initial['dungeon_state']['cards_remaining']
+        
+        # Take multiple actions
+        for i in range(min(3, len(scoundrel.dungeon.current_room))):
+            try:
+                scoundrel.take_action(str(i + 1))
+            except ValueError:
+                break
+        
+        state_after = scoundrel.current_game_state()
+        
+        # Cards remaining should have decreased
+        assert state_after['dungeon_state']['cards_remaining'] < cards_initial
+        # Game should still be active (likely)
+        if state_after['player_state']['hp'] > 0:
+            assert state_after['is_active'] is True
+    
+    def test_game_state_weapon_degradation(self):
+        """Test that weapon max_monster_level decreases after use"""
+        scoundrel = Scoundrel(ui=UI.API)
+        
+        # Equip a weapon first
+        weapon_card = next(
+            (card for card in scoundrel.dungeon.current_room 
+             if card.suit['class'] == 'weapon'),
+            None
+        )
+        
+        if weapon_card:
+            scoundrel.interact_card(weapon_card)
+            state_after_weapon = scoundrel.current_game_state()
+            weapon_max_after_equip = state_after_weapon['player_state']['weapon_max_monster_level']
+            
+            # Fight a monster with the weapon
+            monster_card = next(
+                (card for card in scoundrel.dungeon.current_room 
+                 if card.suit['class'] == 'monster'),
+                None
+            )
+            
+            if monster_card:
+                scoundrel.interact_card(monster_card)
+                state_after_fight = scoundrel.current_game_state()
+                weapon_max_after_fight = state_after_fight['player_state']['weapon_max_monster_level']
+                
+                # Weapon max should decrease to monster level or stay same if weapon not used
+                # (depends on if weapon was actually used)
+                assert weapon_max_after_fight <= weapon_max_after_equip
