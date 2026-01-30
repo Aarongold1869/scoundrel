@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: scoundrel-ai
+Version: 0.1.0
+Summary: Scoundrel AI Training and Deck Analysis Tools
+Author-email: Aaron Goldstein <your.email@example.com>
+Requires-Python: >=3.8
+Requires-Dist: gymnasium>=0.26.0
+Requires-Dist: stable-baselines3>=2.0.0
+Requires-Dist: numpy>=1.21.0
+Requires-Dist: torch>=1.9.0

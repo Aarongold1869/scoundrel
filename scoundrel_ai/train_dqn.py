@@ -19,7 +19,7 @@ from sb3_contrib import MaskablePPO
 
 import gymnasium as gym
 from gymnasium.wrappers import FlattenObservation
-from scoundrel_ai.scoundrel_env import ScoundrelEnv, StrategyLevel
+from scoundrel_ai.scoundrel_env import ScoundrelEnv
 import os
 import glob
 import json
@@ -173,22 +173,17 @@ class MaskedDQNPolicy(DQNPolicy):
         return action, state
 
 
-def get_tensorboard_log_name(algorithm, strategy_level, timesteps):
+def get_tensorboard_log_name(algorithm, timesteps):
     """Generate tensorboard log directory name with iteration number
     
-    Format: {ALGORITHM}_{STRATEGY}_{timesteps}k_{iteration}
-    Example: DQN_EXPERT_100k_1
+    Format: {ALGORITHM}_{timesteps}k_{iteration}
+    Example: DQN_100k_1
     """
-    # Convert strategy level to name
-    if isinstance(strategy_level, int):
-        strategy_level = StrategyLevel(strategy_level)
-    strategy_name = strategy_level.name  # BASIC, INTERMEDIATE, ADVANCED, EXPERT
-    
     # Format timesteps (100000 -> 100k, 1000000 -> 1000k)
     timesteps_k = f"{timesteps // 1000}k"
     
     # Find next iteration number
-    pattern = f"./scoundrel_ai/tensorboard_logs/{algorithm.upper()}_{strategy_name}_{timesteps_k}_*"
+    pattern = f"./scoundrel_ai/tensorboard_logs/{algorithm.upper()}_{timesteps_k}_*"
     existing_dirs = glob.glob(pattern)
     
     if not existing_dirs:
@@ -204,10 +199,10 @@ def get_tensorboard_log_name(algorithm, strategy_level, timesteps):
                 pass
         iteration = max(iterations) + 1 if iterations else 1
     
-    return f"./scoundrel_ai/tensorboard_logs/{algorithm.upper()}_{strategy_name}_{timesteps_k}_{iteration}"
+    return f"./scoundrel_ai/tensorboard_logs/{algorithm.upper()}_{timesteps_k}_{iteration}"
 
 
-def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_dqn", strategy_level=StrategyLevel.EXPERT):
+def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_dqn"):
     """Train a DQN agent on Scoundrel"""
     
     # Create directories
@@ -215,7 +210,7 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     os.makedirs("scoundrel_ai/logs", exist_ok=True)
     
     # Create the environment
-    env = ScoundrelEnv(strategy_level=strategy_level)
+    env = ScoundrelEnv()
     env = ActionMaskingDQNWrapper(env)  # Add action masking wrapper
     env = Monitor(env, "scoundrel_ai/logs", info_keywords=())
     env = FlattenObservation(env)
@@ -224,14 +219,14 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     
     # Validate the environment
     print("Checking environment...")
-    test_env = ScoundrelEnv(strategy_level=strategy_level)
+    test_env = ScoundrelEnv()
     test_env = Monitor(test_env, info_keywords=())
     test_env = FlattenObservation(test_env)
     check_env(test_env, warn=True)
     print("Environment check passed!")
     
     # Create evaluation environment
-    eval_env = ScoundrelEnv(strategy_level=strategy_level)
+    eval_env = ScoundrelEnv()
     eval_env = ActionMaskingDQNWrapper(eval_env)  # Add action masking wrapper
     eval_env = Monitor(eval_env, info_keywords=())
     eval_env = FlattenObservation(eval_env)
@@ -239,7 +234,7 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     eval_env = VecNormalize(eval_env, norm_obs=True, norm_reward=False, clip_obs=10.0, training=False)
     
     # Generate tensorboard log directory name
-    tensorboard_log_dir = get_tensorboard_log_name("dqn", strategy_level, total_timesteps)
+    tensorboard_log_dir = get_tensorboard_log_name("dqn", total_timesteps)
     print(f"Tensorboard logs will be saved to: {tensorboard_log_dir}")
     
     # Create callbacks
@@ -257,18 +252,18 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     model = MaskedDQN(
         "MlpPolicy",
         env,
-        learning_rate=5e-5,  # Lower learning rate for stability
+        learning_rate=1e-4,  # Lower learning rate for stability
         buffer_size=200000,  # Larger buffer for more experience
-        learning_starts=1000,  # Start learning after 1000 steps for better data
+        learning_starts=1500,  # Start learning after 1000 steps for better data
         batch_size=64,  # Reasonable batch size
         tau=1.0,
         gamma=0.99,  # Standard discount factor
         train_freq=4,
         gradient_steps=2,  # More gradient steps per update
-        target_update_interval=1000,  # Update target network every 1000 steps
+        target_update_interval=500,  # Update target network every 1000 steps
         exploration_fraction=0.5,  # Explore for 50% of training
         exploration_initial_eps=1.0,
-        exploration_final_eps=0.05,  # Low final exploration for fine-tuning
+        exploration_final_eps=0.1,   # Low final exploration for fine-tuning
         verbose=1,
         tensorboard_log=tensorboard_log_dir,
         policy_kwargs=dict(net_arch=[256, 256])  # Larger network for complex observations
@@ -301,7 +296,7 @@ def train_dqn(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_d
     return model
 
 
-def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_ppo", strategy_level=StrategyLevel.EXPERT):
+def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_ppo"):
     """Train a PPO agent on Scoundrel (alternative algorithm)"""
     
     os.makedirs(save_path, exist_ok=True)
@@ -315,7 +310,7 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
         return masks
     
     def make_env():
-        env = ScoundrelEnv(strategy_level=strategy_level)
+        env = ScoundrelEnv()
         env = ActionMasker(env, mask_fn)      # ActionMasker calls mask_fn
         env = Monitor(env, "scoundrel_ai/logs", info_keywords=())
         env = FlattenObservation(env)
@@ -327,14 +322,14 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
     
     
     print("Checking environment (non-vectorized version)...")
-    test_env = ScoundrelEnv(strategy_level=strategy_level)
+    test_env = ScoundrelEnv()
     test_env = ActionMasker(test_env, mask_fn)
     test_env = Monitor(test_env, info_keywords=())
     test_env = FlattenObservation(test_env)
     check_env(test_env, warn=True)
     print("Environment check passed!")
     
-    eval_env = ScoundrelEnv(strategy_level=strategy_level)
+    eval_env = ScoundrelEnv()
     eval_env = ActionMasker(eval_env, mask_fn)  # Apply ActionMasker first
     eval_env = Monitor(eval_env, info_keywords=())
     eval_env = FlattenObservation(eval_env)
@@ -346,7 +341,7 @@ def train_ppo(total_timesteps=100000, save_path="scoundrel_ai/models/scoundrel_p
     # eval_env = VecNormalize(eval_env, norm_obs=True, norm_reward=False, clip_obs=10.0, training=False)
     
     # Generate tensorboard log directory name
-    tensorboard_log_dir = get_tensorboard_log_name("ppo", strategy_level, total_timesteps)
+    tensorboard_log_dir = get_tensorboard_log_name("ppo", total_timesteps)
     print(f"Tensorboard logs will be saved to: {tensorboard_log_dir}")
     
     eval_callback = EvalCallback(
@@ -405,7 +400,7 @@ def evaluate_model(model_path, episodes=10, gameplay_path=None):
     is_ppo = "ppo" in model_path.lower()
     is_dqn = "dqn" in model_path.lower()
     
-    env = ScoundrelEnv(render_mode="human")
+    env = ScoundrelEnv(render_mode="human", eval=True)
     
     # Apply wrappers for DQN (requires ActionMaskingDQNWrapper)
     if is_dqn:
@@ -522,10 +517,12 @@ def evaluate_model(model_path, episodes=10, gameplay_path=None):
                 room_cards = [serialize_card(card) for card in game_state["room_state"]["cards"]]
                 player_state = game_state["player_state"]
                 room_state = game_state["room_state"]
+                dungeon_state = game_state['dungeon_state']
             else:
                 room_cards = []
                 player_state = {}
                 room_state = {}
+                dungeon_state = {}
 
             if isinstance(action, (list, tuple, np.ndarray)):
                 action_value = int(action[0])
@@ -545,6 +542,7 @@ def evaluate_model(model_path, episodes=10, gameplay_path=None):
                 "weapon_level": player_state.get("weapon_level", 0),
                 "weapon_max_monster_level": player_state.get("weapon_max_monster_level", 0),
                 "can_avoid": room_state.get("can_avoid", 0),
+                "cards_remaining": dungeon_state.get("cards_remaining", 0),
             })
             step_index += 1
             
@@ -631,9 +629,10 @@ def replay(gameplay_path="gameplay.json"):
         weapon_level = step.get("weapon_level", 0)
         weapon_max = step.get("weapon_max_monster_level", 0)
         can_avoid = step.get("can_avoid", 0)
+        cards_remaining = step.get("cards_remaining", 0)
 
         print(f"Player State: HP={hp}, Weapon={weapon_level} ({weapon_max}), Score={score}")
-        print(f"Room Options: Can Avoid={bool(can_avoid)}")
+        print(f"Dungeon: {cards_remaining} cards remaining | Can Avoid={bool(can_avoid)}")
         
         if room_cards:
             print(f"\nCurrent Room ({len(room_cards)} cards):")
@@ -672,17 +671,14 @@ if __name__ == "__main__":
                         help="Number of episodes for evaluation")
     parser.add_argument("--gameplay-path", type=str, default=None,
                         help="Path to gameplay.json for saving or replaying")
-    parser.add_argument("--strategy-level", type=int, default=4,
-                        help="Strategy level: 1=BASIC, 2=INTERMEDIATE, 3=ADVANCED, 4=EXPERT (default)")
     
     args = parser.parse_args()
     
     if args.mode == "train":
-        strategy_level = StrategyLevel(args.strategy_level)
         if args.algorithm == "dqn":
-            train_dqn(total_timesteps=args.timesteps, strategy_level=strategy_level)
+            train_dqn(total_timesteps=args.timesteps)
         elif args.algorithm == "ppo":
-            train_ppo(total_timesteps=args.timesteps, strategy_level=strategy_level)
+            train_ppo(total_timesteps=args.timesteps)
     elif args.mode == "eval":
         if args.model_path is None:
             print("Error: --model-path is required for evaluation mode")

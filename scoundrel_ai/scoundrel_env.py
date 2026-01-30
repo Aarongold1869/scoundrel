@@ -7,16 +7,7 @@ import gymnasium as gym
 from gymnasium import spaces
 
 import numpy as np
-from enum import IntEnum
 from typing import List
-
-
-class StrategyLevel(IntEnum):
-    """Reward shaping strategy complexity levels"""
-    BASIC = 1         # Fundamental game mechanics
-    INTERMEDIATE = 2  # Resource management
-    ADVANCED = 3      # Strategic optimization
-    EXPERT = 4        # Complex situational play
 
 
 class ScoundrelEnv(gym.Env):
@@ -24,36 +15,16 @@ class ScoundrelEnv(gym.Env):
     
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
 
-    def __init__(self, render_mode=None, strategy_level=StrategyLevel.EXPERT):
+    def __init__(self, render_mode=None, eval: bool = False):
         super().__init__()
         
         self.render_mode = render_mode
+        self.eval = eval
         self.game = None
-        
-        # Convert to StrategyLevel enum if integer provided
-        if isinstance(strategy_level, int):
-            try:
-                self.strategy_level = StrategyLevel(strategy_level)
-            except ValueError:
-                raise ValueError(f"strategy_level must be 1-4, got {strategy_level}")
-        elif isinstance(strategy_level, StrategyLevel):
-            self.strategy_level = strategy_level
-        else:
-            raise ValueError(f"strategy_level must be int or StrategyLevel, got {type(strategy_level)}")
         
         # Define action space
         # Actions: 0-3 = interact with card 1-4, 4 = avoid room
         self.action_space = spaces.Discrete(5)
-        
-        # low_bounds = np.zeros(45, dtype=np.float32)
-        # # low_bounds[41] = -10  # Danger level: min when weapon 10, monster 0
-        
-        # self.observation_space = spaces.Box(
-        #     low=low_bounds,
-        #     high=300,  # Max value to accommodate sum of card values (monsters ~208, weapons/health ~54 each)
-        #     shape=(45,),  # Extended observation space with survivability, threat, and temporal metrics
-        #     dtype=np.float32
-        # )
 
         player_space = spaces.Dict({
             "hp": spaces.Box(low=0, high=20, shape=(1,), dtype=np.float32),
@@ -205,7 +176,9 @@ class ScoundrelEnv(gym.Env):
         super().reset(seed=seed)
         
         # Initialize a new game
-        self.game = Scoundrel(ui=UI.API)
+       
+        # truncate_deck = True if not self.eval else False
+        self.game = Scoundrel(ui=UI.API, truncate_deck=False)
         
         # Track state for reward shaping
         # self.last_room_id = id(self.game.dungeon.current_room)
@@ -240,13 +213,6 @@ class ScoundrelEnv(gym.Env):
             
         Returns:
             tuple: (observation, reward, terminated, truncated, info)
-            
-        Strategy Level:
-            The environment can be configured with different strategy levels (StrategyLevel enum or int 1-4):
-            - StrategyLevel.BASIC (1): Only fundamental game mechanics (score, HP, progress)
-            - StrategyLevel.INTERMEDIATE (2): Adds resource management (weapons, potions)
-            - StrategyLevel.ADVANCED (3): Adds strategic optimization (efficiency, conservation)
-            - StrategyLevel.EXPERT (4): Adds complex situational play (endgame preservation, avoidance)
             
         Reward Shaping:
             The reward function is designed to maximize the game score while encouraging
@@ -291,9 +257,7 @@ class ScoundrelEnv(gym.Env):
             # Use the game's take_action method with error handling
             try:
                 self.game.take_action(action=action_str)
-                # Small penalty for avoiding
-                if action_str == 'a':
-                    reward = -0.5
+
             except ValueError as e:
                 # Invalid action (e.g., card doesn't exist, can't avoid)
                 # This is a critical failure - agent chose an illegal move
@@ -325,51 +289,72 @@ class ScoundrelEnv(gym.Env):
         
         hp_change = new_state['player_state']['hp'] - prev_state['player_state']['hp']
         weapon_change = new_state['player_state']['weapon_level'] - prev_state['player_state']['weapon_level']
-        
-        # 1. DAMAGE: Direct penalty scaled by current HP (survival risk)
+
+        # 1. DAMAGE: Penalty scaled by current HP (survival risk)
+        # Reduced so damage doesn't overshadow necessary progress through dungeon
         if hp_change < 0:
             damage = abs(hp_change)
             # Higher penalty when at low HP (exponential scaling)
             if prev_state['player_state']['hp'] < 5:
-                reward -= damage * 4.0  # Critical: -4 to -20 per damage
+                reward -= damage * 2.5  # Critical: -2.5 to -12.5 per damage
             elif prev_state['player_state']['hp'] < 10:
-                reward -= damage * 2.5  # Dangerous: -2.5 to -12.5 per damage
+                reward -= damage * 1.5  # Dangerous: -1.5 to -7.5 per damage
             else:
-                reward -= damage * 1.5  # Safe: -1.5 to -7.5 per damage
+                reward -= damage * 1.0  # Safe: -1.0 to -5.0 per damage
         
-        # 2. HEALING: Direct bonus for actual healing, penalize waste
+        # 2. HEALING: Bonus scaled by HP deficit (healing when low HP is more valuable)
         if hp_change > 0 and card_interacted and card_interacted.suit['class'] == 'health':
             potion_value = card_interacted.val
             wasted = max(0, potion_value - hp_change)
             
-            reward += hp_change * 2.0  # +2 to +40 for actual healing
-            reward -= wasted * 1.5  # -0 to -21 for wasted healing
+            # Scale healing reward by how much HP was needed (prev_hp)
+            if prev_state['player_state']['hp'] < 5:
+                healing_multiplier = 3.0  # Critical healing is very valuable
+            elif prev_state['player_state']['hp'] < 10:
+                healing_multiplier = 2.0  # Dangerous healing is valuable
+            else:
+                healing_multiplier = 1.0  # Safe healing is neutral
+            
+            reward += hp_change * healing_multiplier
+            reward -= wasted * 1.0  # Light penalty for waste
         
-        # 3. WEAPON EQUIP: Bonus based on weapon strength
+        # 3. WEAPON EQUIP: Bonus based on weapon strength, penalty for downgrading
         if weapon_change > 0 and card_interacted and card_interacted.suit['class'] == 'weapon':
             new_weapon = new_state['player_state']['weapon_level']
             reward += new_weapon * 0.5  # +0.5 to +5.0 based on weapon level
-        
-        # 4. ROOM PROGRESS: Flat bonus per card cleared
+
+        # 4. Fight MONSTERS:
+        if card_interacted and card_interacted.suit['class'] == 'monster':
+            monster_strength = card_interacted.val
+            reward += monster_strength * 0.5
+            if hp_change < monster_strength:
+                # bonus if you reduced damage with a weapon 
+                reward += max(1.0, monster_strength - new_state['player_state']['weapon_level']) * 2.0
+
+            # weapon_degredation = prev_state['player_state']['weapon_max_monster_level'] - new_state['player_state']['weapon_max_monster_level']
+            # weapon_degredation_ratio = weapon_degredation / prev_state['player_state']['weapon_max_monster_level']
+            # current_weapon = new_state['player_state']['weapon_level']
+            # if weapon_degredation_ratio < 0.4:
+            #     reward += current_weapon / (1.0 + weapon_degredation_ratio)
+
+        # 5. ROOM PROGRESS: Flat bonus per card cleared
         cards_cleared = cards_change
         if cards_cleared > 0:
-            reward += cards_cleared * 1.0  # +1.0 per card (was +0.5)
+            reward += cards_cleared * 2.0  # +1.0 per card (was +0.5)
         
-        # 5. GAME END: Direct reward based on final score
+        # 6. GAME END: Bonus for winning (reaching positive/zero score)
         if not new_state['is_active']:
             terminated = True
             final_score = new_state['score']
             
-            # Direct score reward: -188 to +30 → scaled to -19 to +3
-            reward += final_score * 0.1  # Directly proportional to score
+            reward += final_score * 0.1 # Penalize dying before end of dungeon porportionally to performance
 
-        
+            # Win bonus: if final_score >= 0, the player won
+            if final_score >= 0:
+                reward += 30.0  # Large bonus for winning
+
         observation = self._get_obs()
         info = self._get_info()
-        
-        # Store current room cards for carryover analysis in next step
-        # if self.strategy_level == StrategyLevel.EXPERT:
-        #     self.prev_room_cards = new_state['room_state']['cards'].copy() if new_state['room_state']['cards'] else None
         
         return observation, reward, terminated, truncated, info
     
