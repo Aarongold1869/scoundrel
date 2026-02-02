@@ -177,8 +177,7 @@ class ScoundrelEnv(gym.Env):
         
         # Initialize a new game
        
-        # truncate_deck = True if not self.eval else False
-        self.game = Scoundrel(ui=UI.API, truncate_deck=False)
+        self.game = Scoundrel(ui=UI.API)
         
         # Track state for reward shaping
         # self.last_room_id = id(self.game.dungeon.current_room)

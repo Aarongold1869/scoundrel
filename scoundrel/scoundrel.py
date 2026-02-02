@@ -58,7 +58,7 @@ class RoomState(TypedDict):
 
 class Dungeon():
     
-    def __init__(self):
+    def __init__(self, shuffle_deck: bool = True):
         self.cards: List[Card] = []
         i = 0
         for suit in SUITS:
@@ -68,7 +68,8 @@ class Dungeon():
                 self.cards.append(Card(suit=suit, symbol=symbol, val=val, id=i))
                 i += 1
 
-        self.shuffle()
+        if shuffle_deck:
+            self.shuffle()
         self.monsters_remaining = 26
         self.monster_strength_remaining = 208
         self.weapons_remaining = 9

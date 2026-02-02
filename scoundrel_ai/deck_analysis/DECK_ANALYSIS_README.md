@@ -44,19 +44,6 @@ FILES CREATED:
      * Consistency checks
      * Integration tests
 
-4. scoundrel_ai/deck_analysis_examples.py
-   - Demo code showing usage patterns
-   - Examples of:
-     * Analyzing random decks
-     * Generating solvable decks
-     * Testing partial observability modes
-     * Comparing deck quality
-
-5. validate_deck_analyzer.py
-   - Quick validation script (no pytest required)
-   - Checks all major functionality
-
-
 WINNABILITY SCORING:
 ====================
 
