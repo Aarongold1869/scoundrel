@@ -12,11 +12,11 @@ SUITS = [
 
 
 CARD_VALUES = {
-    **{str(i): i for i in range(2, 11)},
-    'J': 11,
-    'Q': 12,
+    'A': 14,
     'K': 13,
-    'A': 14
+    'Q': 12,
+    'J': 11,
+    **{str(i): i for i in range(10, 1, -1)}
 }
 
 

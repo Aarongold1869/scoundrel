@@ -52,6 +52,38 @@ class DeckAnalyzer:
         """Return 'monster', 'weapon', or 'potion'"""
         return card.suit['class']
     
+    def _effective_distance(self, raw_distance: int) -> float:
+        """
+        Calculate effective distance accounting for avoid mechanic.
+        
+        Cards in the next room (4-7 cards away) are more accessible via avoid.
+        Returns weighted distance that reflects actual accessibility.
+        
+        Args:
+            raw_distance: Linear card distance
+            
+        Returns:
+            Effective distance (lower = more accessible)
+        """
+        if raw_distance == float('inf'):
+            return float('inf')
+        
+        # Room boundaries: every 4 cards is a room
+        rooms_away = raw_distance // 4
+        position_in_room = raw_distance % 4
+        
+        if rooms_away == 0:
+            # Same room: actual distance
+            return float(raw_distance)
+        elif rooms_away == 1:
+            # Next room: accessible via 1 avoid (lower effective distance)
+            # Weight as if it's ~2-3 cards away instead of 4-7
+            return 2.0 + (position_in_room * 0.25)
+        else:
+            # 2+ rooms away: need to clear/avoid multiple rooms
+            # Penalize additional rooms but not as severely as raw distance
+            return 4.0 + (rooms_away - 1) * 3.0 + (position_in_room * 0.25)
+    
     def _distance_to_next(self, position: int, card_type: str) -> int:
         """
         Distance from position to next card of given type.
@@ -92,13 +124,13 @@ class DeckAnalyzer:
         
         # 2. Analyze weapon availability relative to monsters
         weapon_availability = self._analyze_weapon_availability(monsters)
-        if weapon_availability > 15:  # Average distance to weapon when facing monsters
-            warnings.append(f"Weapons are far from monsters (avg distance: {weapon_availability:.1f})")
+        if weapon_availability > 8:  # Average effective distance to weapon when facing monsters
+            warnings.append(f"Weapons are far from monsters (avg effective distance: {weapon_availability:.1f})")
         
         # 3. Analyze potion availability
         potion_availability = self._analyze_potion_availability(monsters)
-        if potion_availability > 10:
-            warnings.append(f"Potions are far from monsters (avg distance: {potion_availability:.1f})")
+        if potion_availability > 6:  # Average effective distance to potion
+            warnings.append(f"Potions are far from monsters (avg effective distance: {potion_availability:.1f})")
         
         # 4. Check distribution balance
         distribution_balance = self._analyze_distribution_balance()
@@ -140,7 +172,8 @@ class DeckAnalyzer:
     
     def _analyze_weapon_availability(self, monsters: List[Card]) -> float:
         """
-        Average distance to a weapon when facing each monster.
+        Average effective distance to a weapon when facing each monster.
+        Accounts for avoid mechanic - cards in next room are more accessible.
         Lower is better.
         """
         distances = []
@@ -151,7 +184,11 @@ class DeckAnalyzer:
             dist_prev = self._distance_to_previous(monster_pos, 'weapon')
             dist_next = self._distance_to_next(monster_pos, 'weapon')
             
-            min_distance = min(dist_prev, dist_next)
+            # Use effective distance accounting for avoid mechanic
+            eff_prev = self._effective_distance(dist_prev)
+            eff_next = self._effective_distance(dist_next)
+            
+            min_distance = min(eff_prev, eff_next)
             if min_distance != float('inf'):
                 distances.append(min_distance)
         
@@ -159,7 +196,8 @@ class DeckAnalyzer:
     
     def _analyze_potion_availability(self, monsters: List[Card]) -> float:
         """
-        Average distance to a potion when facing each monster.
+        Average effective distance to a potion when facing each monster.
+        Accounts for avoid mechanic - cards in next room are more accessible.
         Lower is better (potions needed for healing during fights).
         """
         distances = []
@@ -169,7 +207,11 @@ class DeckAnalyzer:
             dist_prev = self._distance_to_previous(monster_pos, 'health')
             dist_next = self._distance_to_next(monster_pos, 'health')
             
-            min_distance = min(dist_prev, dist_next)
+            # Use effective distance accounting for avoid mechanic
+            eff_prev = self._effective_distance(dist_prev)
+            eff_next = self._effective_distance(dist_next)
+            
+            min_distance = min(eff_prev, eff_next)
             if min_distance != float('inf'):
                 distances.append(min_distance)
         
@@ -277,18 +319,20 @@ class DeckAnalyzer:
             # Good healing - easy
             base_score = 0.60
         
-        # Weapon availability (lower distance is better)
+        # Weapon availability (lower effective distance is better)
         if weapon_availability == float('inf'):
             weapon_score = 0.0  # No weapons
         else:
-            weapon_score = max(0, 1.0 - (weapon_availability / 20))
+            # Adjusted for effective distance scale (max ~10 instead of 20)
+            weapon_score = max(0, 1.0 - (weapon_availability / 10))
         base_score += weapon_score * 0.15
         
         # Potion availability
         if potion_availability == float('inf'):
             potion_score = 0.0  # No potions
         else:
-            potion_score = max(0, 1.0 - (potion_availability / 15))
+            # Adjusted for effective distance scale (max ~8 instead of 15)
+            potion_score = max(0, 1.0 - (potion_availability / 8))
         base_score += potion_score * 0.1
         
         # Distribution balance
@@ -313,25 +357,21 @@ class SolvableDeckGenerator:
         """
         Generate a solvable deck that meets winnability targets.
         
+        Uses deterministic construction to ensure balanced resource distribution
+        throughout the deck, rather than random ordering which often clusters
+        resources at the beginning and leaves monsters at the end.
+        
         Args:
             difficulty: "easy", "medium", or "hard"
-            target_winnability: Minimum winnability score (0.0-1.0)
-            max_attempts: How many random attempts before giving up
+            target_winnability: Target winnability score (0.0-1.0)
+            max_attempts: Unused - kept for API compatibility
         
         Returns:
             (dungeon, analysis) tuple
         """
         assert 0.0 <= target_winnability <= 1.0
         
-        for attempt in range(max_attempts):
-            dungeon = Dungeon()
-            analyzer = DeckAnalyzer(dungeon)
-            analysis = analyzer.analyze()
-            
-            if analysis.winnability_score >= target_winnability:
-                return dungeon, analysis
-        
-        # If random generation fails, construct deck deterministically
+        # Always use deterministic construction for balanced decks
         return SolvableDeckGenerator._construct_deck(difficulty, target_winnability)
     
     @staticmethod
@@ -340,86 +380,86 @@ class SolvableDeckGenerator:
         Deterministically construct a solvable deck by careful placement.
         Uses difficulty and target_winnability to adjust resource distribution.
         
-        Difficulty affects monster placement and resource clustering:
-        - "easy": Weak monsters early, resources well-spaced, healing abundant
-        - "medium": Balanced distribution, moderate challenge
-        - "hard": Strong monsters early, resources clustered, healing scarce
+        Accounts for weapon degradation mechanic:
+        - Weapons degrade each time they're used, only beating monsters weaker than last
+        - Strong monsters early with strong weapons allows optimal degradation
+        
+        Distributes weapons and potions evenly throughout the deck by interleaving
+        them with monsters, preventing long stretches of monsters at the end.
+        
+        Difficulty affects monster placement and resource density:
+        - "easy": Strong monsters early (descending), 1 weapon/potion per 3 monsters
+        - "medium": Strong monsters early (descending), 1 weapon/potion per 2 monsters
+        - "hard": Weak monsters first (ascending), 1 weapon/potion per 2 monsters (scarce resources)
         """
-        dungeon = Dungeon()
+        dungeon = Dungeon(shuffle_deck=False) # shuffle deck has cards descending by suit
         
         # Extract cards by type
         cards = dungeon.cards
-        monsters = [c for c in cards if c.suit['class'] == 'monster']
-        weapons = [c for c in cards if c.suit['class'] == 'weapon']
-        potions = [c for c in cards if c.suit['class'] == 'health']
+        # When shuffle_deck=False: weapons (descending), potions (descending), monsters (spades then clubs, descending)
+        weapons = list(cards[:9])  # Already sorted descending (A, K, Q, J, 10, 9, 8, 7, 6)
+        potions = list(cards[9:18])  # Already sorted descending
+        monsters = list(cards[18:])  # Already sorted descending within suits
+
+        # Helper function to add variability by shuffling within chunks
+        def shuffle_in_chunks(card_list: List[Card], chunk_size: int = 3) -> List[Card]:
+            """
+            Partition sorted cards into chunks and shuffle within each chunk.
+            Maintains overall trend while adding local variability.
+            """
+            result = []
+            for i in range(0, len(card_list), chunk_size):
+                chunk = card_list[i:i+chunk_size]
+                random.shuffle(chunk)
+                result.extend(chunk)
+            return result
         
-        # Sort monsters by strength for difficulty-based placement
-        monsters_sorted = sorted(monsters, key=lambda m: m.val)
-        
-        # Determine resource placement strategy based on difficulty and target
+        potions_shuffled = shuffle_in_chunks(potions, chunk_size=3)
+        weapons_shuffled = shuffle_in_chunks(weapons, chunk_size=3)
+
+        # For difficulty-based placement
         if difficulty == "easy" or target_winnability > 0.75:
-            # Easy: weak monsters first, abundant resources, good spacing
-            monsters_to_use = monsters_sorted[:len(monsters)]  # Use weakest monsters
-            weapons_per_section = 3  # More weapons
-            potions_per_section = 3  # More potions
-            spread_factor = 1.2  # More spread out
+            # Easy: High weapons + descending monsters (optimal degradation path)
+            # Natural order from shuffle_deck=False is perfect: A♠️, K♠️, Q♠️, J♠️, ...
+            monsters_to_use = shuffle_in_chunks(monsters, chunk_size=4)  # Larger chunks for easier
+            resources = weapons_shuffled + potions_shuffled  # Weapons first for easier access
+            monsters_per_resource = 3  # 1 resource per 3 monsters (abundant)
         elif difficulty == "hard" or target_winnability < 0.5:
-            # Hard: strong monsters first, scarce resources, clustering
-            monsters_to_use = sorted(monsters, key=lambda m: -m.val)[:len(monsters)]  # Use strongest
-            weapons_per_section = 1  # Fewer weapons
-            potions_per_section = 1  # Fewer potions
-            spread_factor = 0.8  # More clustered
+            # Hard: Weak monsters first (ascending order), scarce resources distributed
+            # Reverse the descending list to get ascending (2, 3, 4... J, Q, K, A)
+            monsters_ascending = list(reversed(monsters))  # Reverse descending to get ascending
+            monsters_to_use = shuffle_in_chunks(monsters_ascending, chunk_size=3)  # Smaller chunks for variety
+            resources = potions_shuffled + weapons_shuffled  # Potions first (might help early)
+            monsters_per_resource = 4  # 1 resource per 4 monsters (scarce)
         else:
-            # Medium: balanced
-            monsters_to_use = monsters
-            weapons_per_section = 2  # Normal weapons
-            potions_per_section = 2  # Normal potions
-            spread_factor = 1.0
+            # Medium: Descending monsters, moderate resource availability
+            monsters_to_use = shuffle_in_chunks(monsters, chunk_size=3)  # Medium chunks
+            resources = weapons_shuffled + potions_shuffled
+            monsters_per_resource = 2  # 1 resource per 2 monsters
         
-        # Build new deck with careful ordering
+        # Build deck by interleaving monsters with resources
         new_deck = []
-        num_sections = max(2, int(4 * spread_factor))
-        
-        monster_idx = 0
-        weapon_idx = 0
-        potion_idx = 0
-        
-        for section in range(num_sections):
-            section_cards = []
+        resource_idx = 0
+
+        # Add monsters and resources together - resources only added while processing monsters
+        while monsters_to_use:
+            # Add N monsters
+            for _ in range(monsters_per_resource):
+                if monsters_to_use:
+                    new_deck.append(monsters_to_use.pop(0))
             
-            # Add monsters for this section (proportional distribution)
-            monsters_in_section = len(monsters_to_use) // num_sections
-            for _ in range(monsters_in_section):
-                if monster_idx < len(monsters_to_use):
-                    section_cards.append(monsters_to_use[monster_idx])
-                    monster_idx += 1
-            
-            # Add weapons (based on difficulty)
-            for _ in range(weapons_per_section):
-                if weapon_idx < len(weapons):
-                    section_cards.append(weapons[weapon_idx])
-                    weapon_idx += 1
-            
-            # Add potions (based on difficulty)
-            for _ in range(potions_per_section):
-                if potion_idx < len(potions):
-                    section_cards.append(potions[potion_idx])
-                    potion_idx += 1
-            
-            # Shuffle within section but keep structure
-            random.shuffle(section_cards)
-            new_deck.extend(section_cards)
-        
-        # Add remaining cards
-        while monster_idx < len(monsters_to_use):
-            new_deck.append(monsters_to_use[monster_idx])
-            monster_idx += 1
-        while weapon_idx < len(weapons):
-            new_deck.append(weapons[weapon_idx])
-            weapon_idx += 1
-        while potion_idx < len(potions):
-            new_deck.append(potions[potion_idx])
-            potion_idx += 1
+            # Add next resource if available (only during main loop)
+            if resource_idx < len(resources):
+                new_deck.append(resources[resource_idx])
+                resource_idx += 1
+
+        # Insert any remaining resources at random positions throughout the deck
+        while resource_idx < len(resources):
+            remaining_resource = resources[resource_idx]
+            # Insert at random position in existing deck
+            insert_pos = random.randint(0, len(new_deck))
+            new_deck.insert(insert_pos, remaining_resource)
+            resource_idx += 1
         
         # Replace dungeon cards with new ordering
         dungeon.cards = new_deck
@@ -710,3 +750,14 @@ class DFSSolver:
             summary += f"Step {i+1}: HP={state.hp} Weapon={state.weapon_level}({state.weapon_max_monster_level}) -> {action}\n"
         
         return summary
+
+
+
+# from scoundrel_ai.deck_analysis import DeckAnalyzer, SolvableDeckGenerator    
+# gen = SolvableDeckGenerator
+# easy_dun = gen.generate_solvable_deck(difficulty='easy')
+# hard_dun = gen.generate_solvable_deck(difficulty='hard')
+# anal_easy = DeckAnalyzer(dungeon=easy_dun[0])
+# anal_hard = DeckAnalyzer(dungeon=hard_dun[0])
+# anal_easy.analyze()
+# anal_hard.analyze()
