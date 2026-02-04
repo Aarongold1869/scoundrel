@@ -274,6 +274,7 @@ class ScoundrelEnv(gym.Env):
         cards_change = prev_state['dungeon_state']['cards_remaining'] - new_state['dungeon_state']['cards_remaining']
         card_interacted = None
         if cards_change > 0 and action_str != 'a':
+            reward += 3.0  
             card_idx = int(action_str) - 1
             if card_idx < new_state['room_state']['cards_remaining']:
                 card_interacted = prev_state['room_state']['cards'][card_idx]
@@ -286,11 +287,10 @@ class ScoundrelEnv(gym.Env):
         # 4. Clearing rooms (bonus per card)
         # 5. Ending the game (large bonus based on final score)
         
-        hp_change = new_state['player_state']['hp'] - prev_state['player_state']['hp']
-        weapon_change = new_state['player_state']['weapon_level'] - prev_state['player_state']['weapon_level']
-
+        
         # 1. DAMAGE: Penalty scaled by current HP (survival risk)
         # Reduced so damage doesn't overshadow necessary progress through dungeon
+        hp_change = new_state['player_state']['hp'] - prev_state['player_state']['hp']
         if hp_change < 0:
             damage = abs(hp_change)
             # Higher penalty when at low HP (exponential scaling)
@@ -306,7 +306,8 @@ class ScoundrelEnv(gym.Env):
             potion_value = card_interacted.val
             wasted = max(0, potion_value - hp_change)
             
-            # Scale healing reward by how much HP was needed (prev_hp)
+            healing_multiplier = 0.5
+            # # Scale healing reward by how much HP was needed (prev_hp)
             if prev_state['player_state']['hp'] < 5:
                 healing_multiplier = 3.0  # Critical healing is very valuable
             elif prev_state['player_state']['hp'] < 10:
@@ -318,6 +319,7 @@ class ScoundrelEnv(gym.Env):
             reward -= wasted * 1.0  # Light penalty for waste
         
         # 3. WEAPON EQUIP: Bonus based on weapon strength, penalty for downgrading
+        weapon_change = new_state['player_state']['weapon_level'] - prev_state['player_state']['weapon_level']
         if weapon_change > 0 and card_interacted and card_interacted.suit['class'] == 'weapon':
             new_weapon = new_state['player_state']['weapon_level']
             reward += new_weapon * 0.5  # +0.5 to +5.0 based on weapon level
@@ -336,10 +338,6 @@ class ScoundrelEnv(gym.Env):
             # if weapon_degredation_ratio < 0.4:
             #     reward += current_weapon / (1.0 + weapon_degredation_ratio)
 
-        # 5. ROOM PROGRESS: Flat bonus per card cleared
-        cards_cleared = cards_change
-        if cards_cleared > 0:
-            reward += cards_cleared * 2.0  # +1.0 per card (was +0.5)
         
         # 6. GAME END: Bonus for winning (reaching positive/zero score)
         if not new_state['is_active']:

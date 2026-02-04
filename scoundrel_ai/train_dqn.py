@@ -4,19 +4,26 @@ Train a DQN (Deep Q-Network) agent to play Scoundrel using Stable-Baselines3
 Requirements:
 pip install stable-baselines3[extra]
 """
-from helpers import get_tensorboard_log_name
-from scoundrel_env import ScoundrelEnv
-from deck_analysis.deck_analyzer import DeckAnalyzer
-from wrappers import *
+from scoundrel_ai.helpers import get_tensorboard_log_name
+from scoundrel_ai.deck_analysis.deck_analyzer import DeckAnalyzer
+from scoundrel_ai.wrappers import (
+    ActionMaskingDQNWrapper, 
+    DeckAnalysisWrapper, 
+    DeckCurriculumCallback, 
+    DeckGeneratorWrapper, 
+    DFSEarlyTerminationWrapper,
+    MaskedDQN, 
+    get_base_env
+)
+from scoundrel_ai.scoundrel_env import ScoundrelEnv
 
+from stable_baselines3 import DQN
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.callbacks import BaseCallback
-
 from sb3_contrib.common.wrappers import ActionMasker
-from sb3_contrib import MaskablePPO
 
 import argparse
 import gymnasium as gym
@@ -32,6 +39,7 @@ import torch as th
 def train_dqn(
     total_timesteps=100000,
     save_path="scoundrel_ai/models/scoundrel_dqn",
+    disable_action_masking=False,
     use_deck_analysis=False,
     early_terminate_threshold=None,
     margin_reward_scale=0.0,
@@ -52,7 +60,8 @@ def train_dqn(
     env = ScoundrelEnv()
     if use_curriculum:
         env = DeckGeneratorWrapper(env, target_winnability=0.8, real_deck_prob=real_deck_prob)
-    env = ActionMaskingDQNWrapper(env)  # Add action masking wrapper
+    if not disable_action_masking:
+        env = ActionMaskingDQNWrapper(env)  # Add action masking wrapper
     if use_dfs_termination:
         env = DFSEarlyTerminationWrapper(env, max_states=dfs_max_states, check_frequency=dfs_check_frequency)
     if use_deck_analysis:
@@ -78,7 +87,8 @@ def train_dqn(
     eval_env = ScoundrelEnv()
     if use_curriculum:
         eval_env = DeckGeneratorWrapper(eval_env, target_winnability=0.8, real_deck_prob=real_deck_prob)
-    eval_env = ActionMaskingDQNWrapper(eval_env)  # Add action masking wrapper
+    if not disable_action_masking:
+        eval_env = ActionMaskingDQNWrapper(eval_env)  # Add action masking wrapper
     if use_dfs_termination:
         eval_env = DFSEarlyTerminationWrapper(eval_env, max_states=dfs_max_states, check_frequency=dfs_check_frequency)
     if use_deck_analysis:
@@ -118,25 +128,48 @@ def train_dqn(
     
     # Initialize the DQN agent with action masking
     print("\nInitializing DQN agent with action masking...")
-    model = MaskedDQN(
-        "MlpPolicy",
-        env,
-        learning_rate=1e-4,  # Lower learning rate for stability
-        buffer_size=200000,  # Larger buffer for more experience
-        learning_starts=1500,  # Start learning after 1000 steps for better data
-        batch_size=64,  # Reasonable batch size
-        tau=1.0,
-        gamma=0.99,  # Standard discount factor
-        train_freq=4,
-        gradient_steps=2,  # More gradient steps per update
-        target_update_interval=500,  # Update target network every 1000 steps
-        exploration_fraction=0.5,  # Explore for 50% of training
-        exploration_initial_eps=1.0,
-        exploration_final_eps=0.1,   # Low final exploration for fine-tuning
-        verbose=1,
-        tensorboard_log=tensorboard_log_dir,
-        policy_kwargs=dict(net_arch=[256, 256])  # Larger network for complex observations
-    )
+
+    if not disable_action_masking:
+        model = MaskedDQN(
+            policy="MlpPolicy",
+            env=env,
+            learning_rate=1e-4,  # Lower learning rate for stability
+            buffer_size=200000,  # Larger buffer for more experience
+            learning_starts=1500,  # Start learning after 1000 steps for better data
+            batch_size=64,  # Reasonable batch size
+            tau=1.0,
+            gamma=0.99,  # Standard discount factor
+            train_freq=4,
+            gradient_steps=2,  # More gradient steps per update
+            target_update_interval=500,  # Update target network every 1000 steps
+            exploration_fraction=0.5,  # Explore for 50% of training
+            exploration_initial_eps=1.0,
+            exploration_final_eps=0.1,   # Low final exploration for fine-tuning
+            verbose=1,
+            tensorboard_log=tensorboard_log_dir,
+            policy_kwargs=dict(net_arch=[256, 256])  # Larger network for complex observations
+        )
+    
+    else:
+        model = DQN(
+            policy="MlpPolicy",
+            env=env,
+            learning_rate=1e-4,  # Lower learning rate for stability
+            buffer_size=200000,  # Larger buffer for more experience
+            learning_starts=1500,  # Start learning after 1000 steps for better data
+            batch_size=64,  # Reasonable batch size
+            tau=1.0,
+            gamma=0.99,  # Standard discount factor
+            train_freq=4,
+            gradient_steps=2,  # More gradient steps per update
+            target_update_interval=500,  # Update target network every 1000 steps
+            exploration_fraction=0.5,  # Explore for 50% of training
+            exploration_initial_eps=1.0,
+            exploration_final_eps=0.1,   # Low final exploration for fine-tuning
+            verbose=1,
+            tensorboard_log=tensorboard_log_dir,
+            policy_kwargs=dict(net_arch=[256, 256])  # Larger network for complex observations
+        )
     
     # Train the agent
     print(f"\nTraining for {total_timesteps} timesteps...")
@@ -165,11 +198,17 @@ def train_dqn(
     return model
 
 
-def evaluate_model(model_path, episodes=10, gameplay_path=None, eval_deck_seed=None):
+def evaluate_model(
+        model_path, 
+        episodes=10, 
+        disable_action_masking=False,
+        gameplay_path=None, 
+        eval_deck_seed=None
+        ):
     """Evaluate a trained model and save best gameplay replay"""
     # Detect algorithm and apply appropriate wrappers
-    is_ppo = "ppo" in model_path.lower()
-    is_dqn = "dqn" in model_path.lower()
+    # is_ppo = "ppo" in model_path.lower()
+    # is_dqn = "dqn" in model_path.lower()
     
     if eval_deck_seed is not None:
         random.seed(eval_deck_seed)
@@ -179,16 +218,16 @@ def evaluate_model(model_path, episodes=10, gameplay_path=None, eval_deck_seed=N
     env = ScoundrelEnv(render_mode="human", eval=True)
     
     # Apply wrappers for DQN (requires ActionMaskingDQNWrapper)
-    if is_dqn:
+    if not disable_action_masking:
         env = ActionMaskingDQNWrapper(env)
 
     # Apply wrappers for PPO (MaskablePPO requires ActionMasker and FlattenObservation)
-    elif is_ppo:
-        def mask_fn(env: gym.Env):
-            while hasattr(env, 'env'):
-                env = env.env
-            return env.action_masks()
-        env = ActionMasker(env, mask_fn)
+    # elif is_ppo:
+    #     def mask_fn(env: gym.Env):
+    #         while hasattr(env, 'env'):
+    #             env = env.env
+    #         return env.action_masks()
+    #     env = ActionMasker(env, mask_fn)
 
     # Consistent wrapper order with training
     env = Monitor(env, info_keywords=())  # Add Monitor like in training
@@ -207,18 +246,21 @@ def evaluate_model(model_path, episodes=10, gameplay_path=None, eval_deck_seed=N
         print("Warning: No VecNormalize stats found, running without normalization")
     
     # Load the model - auto-detect algorithm
-    if is_dqn:
+    if not disable_action_masking:
         model = MaskedDQN.load(model_path, env=env)
-    elif is_ppo:
-        model = MaskablePPO.load(model_path, env=env)
+    else:
+        model = DQN.load(model_path, env=env)
+    # elif is_ppo:
+    #     model = MaskablePPO.load(model_path, env=env)
     # elif "a2c" in model_path.lower():
     #     model = A2C.load(model_path, env=env)
-    else:
-        # Try DQN by default
-        try:
-            model = MaskedDQN.load(model_path, env=env)
-        except:
-            model = MaskablePPO.load(model_path, env=env)
+    # else:
+    #     # Try DQN by default
+    #     try:
+    #         model = MaskedDQN.load(model_path, env=env)
+    #     except:
+    #         pass
+    #     #     model = MaskablePPO.load(model_path, env=env)
 
     # Try to read model name from model_name.txt file
     model_dir = os.path.dirname(model_path)
@@ -401,6 +443,8 @@ if __name__ == "__main__":
                         help="Number of episodes for evaluation")
     parser.add_argument("--eval-deck-seed", type=int, default=None,
                         help="Seed for deterministic evaluation decks")
+    parser.add_argument("--disable-action-masking", action="store_true",
+                        help="Enable Custom DQN Action Masking")
     parser.add_argument("--use-deck-analysis", action="store_true",
                         help="Enable DeckAnalyzer signals for shaping and labeling")
     parser.add_argument("--margin-reward-scale", type=float, default=0.0,
@@ -423,6 +467,8 @@ if __name__ == "__main__":
                         help="Maximum states for DFS solver to explore per check")
     parser.add_argument("--dfs-check-frequency", type=int, default=5,
                         help="Check winnability every N steps (1=every step)")
+    parser.add_argument("--gameplay-path", type=str, default=None,
+                        help="Path to gameplay.json for saving or replaying")
     
     args = parser.parse_args()
     early_terminate_threshold = None
@@ -441,6 +487,7 @@ if __name__ == "__main__":
         if args.algorithm == "dqn":
             train_dqn(
                 total_timesteps=args.timesteps,
+                disable_action_masking=args.disable_action_masking,
                 use_deck_analysis=args.use_deck_analysis,
                 early_terminate_threshold=early_terminate_threshold,
                 margin_reward_scale=args.margin_reward_scale,
@@ -457,6 +504,7 @@ if __name__ == "__main__":
         else:
             evaluate_model(
                 args.model_path,
+                disable_action_masking=args.disable_action_masking,
                 episodes=args.episodes,
                 gameplay_path=args.gameplay_path,
                 eval_deck_seed=args.eval_deck_seed,
