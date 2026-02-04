@@ -35,11 +35,16 @@ from .deck_analyzer import (
     GameState,
 )
 
-from .partial_observability import (
-    PartialObservabilityWrapper,
-    PartialObservabilityWithMemory,
-    create_partial_observability_env,
-)
+try:
+    from .partial_observability import (
+        PartialObservabilityWrapper,
+        PartialObservabilityWithMemory,
+        create_partial_observability_env,
+    )
+except Exception:  # Optional dependency (gymnasium) may be missing
+    PartialObservabilityWrapper = None
+    PartialObservabilityWithMemory = None
+    create_partial_observability_env = None
 
 __all__ = [
     "DeckAnalyzer",

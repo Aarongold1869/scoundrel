@@ -30,6 +30,8 @@ class DeckAnalysis:
     potion_availability: float  # avg distance to potion when facing monsters
     distribution_balance: float  # how evenly resources are spread (0=clustered, 1=perfect)
     monster_concentration: float  # how clustered monsters are
+    monster_ordering: float  # 0=strong late (ascending), 1=strong early (descending)
+    weapon_priority: float  # 0=potions early, 1=weapons early
     
 
 class DeckAnalyzer:
@@ -141,8 +143,14 @@ class DeckAnalyzer:
         monster_concentration = self._analyze_monster_concentration()
         if monster_concentration > 0.7:
             warnings.append(f"Monsters are heavily clustered (concentration: {monster_concentration:.2f})")
+
+        # 6. Monster ordering (weapon degradation friendliness)
+        monster_ordering = self._analyze_monster_ordering()
+
+        # 7. Weapon priority (weapons early, potions later is better)
+        weapon_priority = self._analyze_weapon_priority()
         
-        # 6. Early game survivability
+        # 8. Early game survivability
         first_monsters = monsters[:len(monsters)//3]  # First third of monsters
         early_weapons = [w for w in weapons if self.card_positions[w.id] < len(self.cards)//3]
         if not early_weapons and first_monsters:
@@ -153,6 +161,7 @@ class DeckAnalyzer:
         winnability_score = self._calculate_winnability_score(
             is_winnable, weapon_availability, potion_availability, 
             distribution_balance, monster_concentration, 
+            monster_ordering, weapon_priority,
             total_monster_damage, total_available_healing
         )
         
@@ -168,6 +177,8 @@ class DeckAnalyzer:
             potion_availability=potion_availability,
             distribution_balance=distribution_balance,
             monster_concentration=monster_concentration,
+            monster_ordering=monster_ordering,
+            weapon_priority=weapon_priority,
         )
     
     def _analyze_weapon_availability(self, monsters: List[Card]) -> float:
@@ -282,6 +293,52 @@ class DeckAnalyzer:
         # Normalize by deck size
         clustering = 1.0 - min(1.0, avg_gap / (len(self.cards) / len(monsters)))
         return clustering
+
+    def _analyze_monster_ordering(self) -> float:
+        """
+        Score how favorable monster ordering is for weapon degradation.
+        Returns 0 (strong late / ascending) to 1 (strong early / descending).
+        """
+        monsters = [c for c in self.cards if self._get_card_type(c) == 'monster']
+        if len(monsters) < 2:
+            return 0.5
+
+        positions = [self.card_positions[m.id] for m in monsters]
+        values = [m.val for m in monsters]
+
+        pos_mean = sum(positions) / len(positions)
+        val_mean = sum(values) / len(values)
+
+        pos_var = sum((p - pos_mean) ** 2 for p in positions)
+        val_var = sum((v - val_mean) ** 2 for v in values)
+        if pos_var == 0 or val_var == 0:
+            return 0.5
+
+        cov = sum((p - pos_mean) * (v - val_mean) for p, v in zip(positions, values))
+        corr = cov / ((pos_var ** 0.5) * (val_var ** 0.5))
+
+        # corr ~ -1 means strong early (good), corr ~ +1 means strong late (bad)
+        ordering_score = (1.0 - corr) / 2.0
+        return max(0.0, min(1.0, ordering_score))
+
+    def _analyze_weapon_priority(self) -> float:
+        """
+        Score whether weapons appear earlier than potions.
+        Returns 0 (potions early) to 1 (weapons early).
+        """
+        weapons = [c for c in self.cards if self._get_card_type(c) == 'weapon']
+        potions = [c for c in self.cards if self._get_card_type(c) == 'health']
+        if not weapons or not potions:
+            return 0.5
+
+        mean_weapon_pos = sum(self.card_positions[w.id] for w in weapons) / len(weapons)
+        mean_potion_pos = sum(self.card_positions[p.id] for p in potions) / len(potions)
+        diff = mean_potion_pos - mean_weapon_pos
+
+        # Normalize to [-1, 1] by deck length
+        diff_norm = diff / max(1, len(self.cards))
+        weapon_priority_score = (diff_norm + 1.0) / 2.0
+        return max(0.0, min(1.0, weapon_priority_score))
     
     def _calculate_winnability_score(
         self, 
@@ -290,6 +347,8 @@ class DeckAnalyzer:
         potion_availability: float,
         distribution_balance: float,
         monster_concentration: float,
+        monster_ordering: float,
+        weapon_priority: float,
         total_monster_damage: int,
         total_available_healing: int,
     ) -> float:
@@ -325,7 +384,7 @@ class DeckAnalyzer:
         else:
             # Adjusted for effective distance scale (max ~10 instead of 20)
             weapon_score = max(0, 1.0 - (weapon_availability / 10))
-        base_score += weapon_score * 0.15
+        base_score += weapon_score * 0.20
         
         # Potion availability
         if potion_availability == float('inf'):
@@ -333,14 +392,20 @@ class DeckAnalyzer:
         else:
             # Adjusted for effective distance scale (max ~8 instead of 15)
             potion_score = max(0, 1.0 - (potion_availability / 8))
-        base_score += potion_score * 0.1
+        base_score += potion_score * 0.12
         
         # Distribution balance
-        base_score += distribution_balance * 0.1
+        base_score += distribution_balance * 0.06
         
         # Monster concentration (lower clustering is better)
         concentration_score = 1.0 - monster_concentration
-        base_score += concentration_score * 0.1
+        base_score += concentration_score * 0.06
+
+        # Monster ordering (strong early is better for degradation)
+        base_score += monster_ordering * 0.22
+
+        # Weapons earlier than potions is slightly better
+        base_score += weapon_priority * 0.12
         
         return min(1.0, base_score)
 
@@ -418,13 +483,14 @@ class SolvableDeckGenerator:
         weapons_shuffled = shuffle_in_chunks(weapons, chunk_size=3)
 
         # For difficulty-based placement
-        if difficulty == "easy" or target_winnability > 0.75:
+        # Explicit difficulty should always take precedence over target_winnability.
+        if difficulty == "easy":
             # Easy: High weapons + descending monsters (optimal degradation path)
             # Natural order from shuffle_deck=False is perfect: A♠️, K♠️, Q♠️, J♠️, ...
             monsters_to_use = shuffle_in_chunks(monsters, chunk_size=4)  # Larger chunks for easier
             resources = weapons_shuffled + potions_shuffled  # Weapons first for easier access
             monsters_per_resource = 3  # 1 resource per 3 monsters (abundant)
-        elif difficulty == "hard" or target_winnability < 0.5:
+        elif difficulty == "hard":
             # Hard: Weak monsters first (ascending order), scarce resources distributed
             # Reverse the descending list to get ascending (2, 3, 4... J, Q, K, A)
             monsters_ascending = list(reversed(monsters))  # Reverse descending to get ascending
@@ -432,10 +498,23 @@ class SolvableDeckGenerator:
             resources = potions_shuffled + weapons_shuffled  # Potions first (might help early)
             monsters_per_resource = 4  # 1 resource per 4 monsters (scarce)
         else:
-            # Medium: Descending monsters, moderate resource availability
-            monsters_to_use = shuffle_in_chunks(monsters, chunk_size=3)  # Medium chunks
-            resources = weapons_shuffled + potions_shuffled
-            monsters_per_resource = 2  # 1 resource per 2 monsters
+            # Medium (or unspecified): allow target_winnability to bias within medium
+            if target_winnability > 0.75:
+                # Easier-leaning medium
+                monsters_to_use = shuffle_in_chunks(monsters, chunk_size=4)
+                resources = weapons_shuffled + potions_shuffled
+                monsters_per_resource = 3
+            elif target_winnability < 0.5:
+                # Harder-leaning medium
+                monsters_ascending = list(reversed(monsters))
+                monsters_to_use = shuffle_in_chunks(monsters_ascending, chunk_size=3)
+                resources = potions_shuffled + weapons_shuffled
+                monsters_per_resource = 4
+            else:
+                # Standard medium: Descending monsters, moderate resource availability
+                monsters_to_use = shuffle_in_chunks(monsters, chunk_size=3)  # Medium chunks
+                resources = weapons_shuffled + potions_shuffled
+                monsters_per_resource = 2  # 1 resource per 2 monsters
         
         # Build deck by interleaving monsters with resources
         new_deck = []
