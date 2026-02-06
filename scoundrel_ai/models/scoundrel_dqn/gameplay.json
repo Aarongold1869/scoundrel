@@ -1,302 +1,40 @@
 {
-  "model_name": "DQN_BASE_750k_1",
-  "episode": 667,
-  "score": -2,
+  "model_name": "DQN_LESS_USE_W_BONUS_100k_1",
+  "episode": 386,
+  "score": -12,
   "steps": [
     {
       "step": 0,
       "room_cards": [
         {
-          "symbol": "7",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 7,
-          "id": 12
-        },
-        {
-          "symbol": "Q",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 12,
-          "id": 20
-        },
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 5,
-          "id": 14
-        },
-        {
-          "symbol": "J",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 11,
-          "id": 21
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -188,
-      "hp": 20,
-      "weapon_level": 0,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 1,
-      "cards_remaining": 44,
-      "deck_margin": 0.6186635555113922,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.3813364444886078
-    },
-    {
-      "step": 1,
-      "room_cards": [
-        {
-          "symbol": "7",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 7,
-          "id": 12
-        },
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 5,
-          "id": 14
-        },
-        {
-          "symbol": "J",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 11,
-          "id": 21
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -188,
-      "hp": 8,
-      "weapon_level": 0,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 0,
-      "cards_remaining": 43,
-      "deck_margin": 0.6104849782040614,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.38951502179593855
-    },
-    {
-      "step": 2,
-      "room_cards": [
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 5,
-          "id": 14
-        },
-        {
-          "symbol": "J",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 11,
-          "id": 21
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -181,
-      "hp": 15,
-      "weapon_level": 0,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 0,
-      "cards_remaining": 42,
-      "deck_margin": 0.6171644523437604,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.3828355476562396
-    },
-    {
-      "step": 3,
-      "room_cards": [
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 5,
-          "id": 14
-        },
-        {
-          "symbol": "K",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 13,
-          "id": 19
-        },
-        {
           "symbol": "10",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 10,
+          "id": 35
+        },
+        {
+          "symbol": "4",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 4,
+          "id": 15
+        },
+        {
+          "symbol": "7",
           "suit": {
             "symbol": "\u2666\ufe0f",
             "name": "diamond",
             "class": "weapon"
           },
-          "val": 10,
-          "id": 0
-        },
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 5,
-          "id": 40
-        }
-      ],
-      "action": 2,
-      "action_str": "3",
-      "score": -181,
-      "hp": 4,
-      "weapon_level": 0,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 1,
-      "cards_remaining": 41,
-      "deck_margin": 0.612118903474942,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.387881096525058
-    },
-    {
-      "step": 4,
-      "room_cards": [
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 5,
-          "id": 14
-        },
-        {
-          "symbol": "K",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 13,
-          "id": 19
-        },
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 5,
-          "id": 40
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -181,
-      "hp": 4,
-      "weapon_level": 10,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 0,
-      "cards_remaining": 40,
-      "deck_margin": 0.6062775275596975,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.39372247244030245
-    },
-    {
-      "step": 5,
-      "room_cards": [
-        {
-          "symbol": "K",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 13,
-          "id": 19
-        },
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 5,
-          "id": 40
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -176,
-      "hp": 9,
-      "weapon_level": 10,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 0,
-      "cards_remaining": 39,
-      "deck_margin": 0.6031317278797363,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.39686827212026365
-    },
-    {
-      "step": 6,
-      "room_cards": [
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 5,
-          "id": 40
+          "val": 7,
+          "id": 3
         },
         {
           "symbol": "7",
@@ -307,53 +45,258 @@
           },
           "val": 7,
           "id": 38
-        },
-        {
-          "symbol": "8",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 8,
-          "id": 24
-        },
-        {
-          "symbol": "Q",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 12,
-          "id": 33
         }
       ],
-      "action": 4,
-      "action_str": "a",
-      "score": -166,
-      "hp": 6,
-      "weapon_level": 10,
-      "weapon_max_monster_level": 13,
+      "action": 0,
+      "action_str": "1",
+      "score": -188,
+      "hp": 20,
+      "weapon_level": 0,
+      "weapon_max_monster_level": 15,
       "can_avoid": 1,
-      "cards_remaining": 38,
-      "deck_margin": 0.5966870945368188,
+      "cards_remaining": 44,
+      "deck_margin": 0.5643127668130191,
       "deck_warnings": [],
       "deck_critical_issues": [],
-      "future_danger": 0.4033129054631812
+      "future_danger": 0.4356872331869809
     },
     {
-      "step": 7,
+      "step": 1,
       "room_cards": [
         {
-          "symbol": "5",
+          "symbol": "4",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 4,
+          "id": 15
+        },
+        {
+          "symbol": "7",
           "suit": {
             "symbol": "\u2666\ufe0f",
             "name": "diamond",
             "class": "weapon"
           },
-          "val": 5,
-          "id": 5
+          "val": 7,
+          "id": 3
+        },
+        {
+          "symbol": "7",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 7,
+          "id": 38
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -188,
+      "hp": 10,
+      "weapon_level": 0,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 0,
+      "cards_remaining": 43,
+      "deck_margin": 0.5566921734017506,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4433078265982494
+    },
+    {
+      "step": 2,
+      "room_cards": [
+        {
+          "symbol": "4",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 4,
+          "id": 15
+        },
+        {
+          "symbol": "7",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 7,
+          "id": 38
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -188,
+      "hp": 10,
+      "weapon_level": 7,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 0,
+      "cards_remaining": 42,
+      "deck_margin": 0.5536310534312819,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.44636894656871806
+    },
+    {
+      "step": 3,
+      "room_cards": [
+        {
+          "symbol": "4",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 4,
+          "id": 15
+        },
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 6,
+          "id": 13
+        },
+        {
+          "symbol": "8",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 8,
+          "id": 2
+        },
+        {
+          "symbol": "K",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 13,
+          "id": 19
+        }
+      ],
+      "action": 2,
+      "action_str": "3",
+      "score": -181,
+      "hp": 10,
+      "weapon_level": 7,
+      "weapon_max_monster_level": 7,
+      "can_avoid": 1,
+      "cards_remaining": 41,
+      "deck_margin": 0.5508659259883504,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4491340740116496
+    },
+    {
+      "step": 4,
+      "room_cards": [
+        {
+          "symbol": "4",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 4,
+          "id": 15
+        },
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 6,
+          "id": 13
+        },
+        {
+          "symbol": "K",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 13,
+          "id": 19
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -181,
+      "hp": 10,
+      "weapon_level": 8,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 0,
+      "cards_remaining": 40,
+      "deck_margin": 0.5420680008002476,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.45793199919975236
+    },
+    {
+      "step": 5,
+      "room_cards": [
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 6,
+          "id": 13
+        },
+        {
+          "symbol": "K",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 13,
+          "id": 19
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -177,
+      "hp": 14,
+      "weapon_level": 8,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 0,
+      "cards_remaining": 39,
+      "deck_margin": 0.5469776385993781,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4530223614006219
+    },
+    {
+      "step": 6,
+      "room_cards": [
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 6,
+          "id": 13
         },
         {
           "symbol": "9",
@@ -366,135 +309,766 @@
           "id": 36
         },
         {
-          "symbol": "2",
+          "symbol": "3",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
-          "val": 2,
-          "id": 30
+          "val": 3,
+          "id": 29
         },
         {
-          "symbol": "5",
+          "symbol": "6",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
-          "val": 5,
-          "id": 27
+          "val": 6,
+          "id": 26
         }
       ],
       "action": 1,
       "action_str": "2",
-      "score": -166,
-      "hp": 6,
-      "weapon_level": 10,
+      "score": -169,
+      "hp": 9,
+      "weapon_level": 8,
       "weapon_max_monster_level": 13,
-      "can_avoid": 0,
+      "can_avoid": 1,
       "cards_remaining": 38,
-      "deck_margin": 0.58737754876284,
+      "deck_margin": 0.5397694856178142,
       "deck_warnings": [],
       "deck_critical_issues": [],
-      "future_danger": 0.41262245123716
+      "future_danger": 0.46023051438218576
+    },
+    {
+      "step": 7,
+      "room_cards": [
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 6,
+          "id": 13
+        },
+        {
+          "symbol": "3",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 3,
+          "id": 29
+        },
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 6,
+          "id": 26
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -161,
+      "hp": 8,
+      "weapon_level": 8,
+      "weapon_max_monster_level": 9,
+      "can_avoid": 0,
+      "cards_remaining": 37,
+      "deck_margin": 0.5343654672865871,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.46563453271341293
     },
     {
       "step": 8,
       "room_cards": [
         {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 5,
-          "id": 5
-        },
-        {
-          "symbol": "2",
+          "symbol": "3",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
-          "val": 2,
-          "id": 30
+          "val": 3,
+          "id": 29
         },
         {
-          "symbol": "5",
+          "symbol": "6",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
-          "val": 5,
-          "id": 27
+          "val": 6,
+          "id": 26
         }
       ],
       "action": 1,
       "action_str": "2",
-      "score": -157,
-      "hp": 6,
-      "weapon_level": 10,
+      "score": -155,
+      "hp": 14,
+      "weapon_level": 8,
       "weapon_max_monster_level": 9,
       "can_avoid": 0,
-      "cards_remaining": 37,
-      "deck_margin": 0.5809679627045775,
+      "cards_remaining": 36,
+      "deck_margin": 0.5338961344227737,
       "deck_warnings": [],
       "deck_critical_issues": [],
-      "future_danger": 0.4190320372954225
+      "future_danger": 0.4661038655772263
     },
     {
       "step": 9,
       "room_cards": [
         {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 5,
-          "id": 5
-        },
-        {
-          "symbol": "5",
+          "symbol": "3",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
-          "val": 5,
-          "id": 27
+          "val": 3,
+          "id": 29
+        },
+        {
+          "symbol": "Q",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 12,
+          "id": 20
+        },
+        {
+          "symbol": "4",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 4,
+          "id": 28
+        },
+        {
+          "symbol": "9",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 9,
+          "id": 10
         }
       ],
       "action": 0,
       "action_str": "1",
-      "score": -155,
-      "hp": 6,
-      "weapon_level": 10,
-      "weapon_max_monster_level": 2,
-      "can_avoid": 0,
-      "cards_remaining": 36,
-      "deck_margin": 0.5944374144410616,
+      "score": -149,
+      "hp": 14,
+      "weapon_level": 8,
+      "weapon_max_monster_level": 6,
+      "can_avoid": 1,
+      "cards_remaining": 35,
+      "deck_margin": 0.5386285670135529,
       "deck_warnings": [],
       "deck_critical_issues": [],
-      "future_danger": 0.4055625855589384
+      "future_danger": 0.4613714329864471
     },
     {
       "step": 10,
       "room_cards": [
         {
-          "symbol": "5",
+          "symbol": "Q",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
+          "val": 12,
+          "id": 20
+        },
+        {
+          "symbol": "4",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 4,
+          "id": 28
+        },
+        {
+          "symbol": "9",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 9,
+          "id": 10
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -146,
+      "hp": 14,
+      "weapon_level": 8,
+      "weapon_max_monster_level": 3,
+      "can_avoid": 0,
+      "cards_remaining": 34,
+      "deck_margin": 0.5452394198330401,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.45476058016695986
+    },
+    {
+      "step": 11,
+      "room_cards": [
+        {
+          "symbol": "Q",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 12,
+          "id": 20
+        },
+        {
+          "symbol": "9",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 9,
+          "id": 10
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -146,
+      "hp": 10,
+      "weapon_level": 8,
+      "weapon_max_monster_level": 3,
+      "can_avoid": 0,
+      "cards_remaining": 33,
+      "deck_margin": 0.5516017986962499,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4483982013037501
+    },
+    {
+      "step": 12,
+      "room_cards": [
+        {
+          "symbol": "Q",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 12,
+          "id": 20
+        },
+        {
+          "symbol": "7",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 7,
+          "id": 12
+        },
+        {
+          "symbol": "3",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 3,
+          "id": 7
+        },
+        {
+          "symbol": "3",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 3,
+          "id": 42
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -137,
+      "hp": 19,
+      "weapon_level": 8,
+      "weapon_max_monster_level": 3,
+      "can_avoid": 1,
+      "cards_remaining": 32,
+      "deck_margin": 0.5550143417253157,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4449856582746843
+    },
+    {
+      "step": 13,
+      "room_cards": [
+        {
+          "symbol": "7",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 7,
+          "id": 12
+        },
+        {
+          "symbol": "3",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 3,
+          "id": 7
+        },
+        {
+          "symbol": "3",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 3,
+          "id": 42
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -137,
+      "hp": 7,
+      "weapon_level": 8,
+      "weapon_max_monster_level": 3,
+      "can_avoid": 0,
+      "cards_remaining": 31,
+      "deck_margin": 0.537816836010451,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.46218316398954895
+    },
+    {
+      "step": 14,
+      "room_cards": [
+        {
+          "symbol": "3",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 3,
+          "id": 7
+        },
+        {
+          "symbol": "3",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 3,
+          "id": 42
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -130,
+      "hp": 14,
+      "weapon_level": 8,
+      "weapon_max_monster_level": 3,
+      "can_avoid": 0,
+      "cards_remaining": 30,
+      "deck_margin": 0.5423397389350618,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4576602610649382
+    },
+    {
+      "step": 15,
+      "room_cards": [
+        {
+          "symbol": "3",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 3,
+          "id": 42
+        },
+        {
+          "symbol": "J",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 11,
+          "id": 34
+        },
+        {
+          "symbol": "9",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 9,
+          "id": 1
+        },
+        {
+          "symbol": "K",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 13,
+          "id": 32
+        }
+      ],
+      "action": 4,
+      "action_str": "a",
+      "score": -130,
+      "hp": 14,
+      "weapon_level": 3,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 1,
+      "cards_remaining": 29,
+      "deck_margin": 0.5365663969545914,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4634336030454086
+    },
+    {
+      "step": 16,
+      "room_cards": [
+        {
+          "symbol": "4",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 4,
+          "id": 41
+        },
+        {
+          "symbol": "4",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 4,
+          "id": 6
+        },
+        {
+          "symbol": "2",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 2,
+          "id": 43
+        },
+        {
+          "symbol": "8",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 8,
+          "id": 37
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -130,
+      "hp": 14,
+      "weapon_level": 3,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 0,
+      "cards_remaining": 29,
+      "deck_margin": 0.5357379174506219,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.46426208254937806
+    },
+    {
+      "step": 17,
+      "room_cards": [
+        {
+          "symbol": "4",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 4,
+          "id": 6
+        },
+        {
+          "symbol": "2",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 2,
+          "id": 43
+        },
+        {
+          "symbol": "8",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 8,
+          "id": 37
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -127,
+      "hp": 13,
+      "weapon_level": 3,
+      "weapon_max_monster_level": 4,
+      "can_avoid": 0,
+      "cards_remaining": 28,
+      "deck_margin": 0.5409128521694,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4590871478306
+    },
+    {
+      "step": 18,
+      "room_cards": [
+        {
+          "symbol": "2",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 2,
+          "id": 43
+        },
+        {
+          "symbol": "8",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 8,
+          "id": 37
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -127,
+      "hp": 13,
+      "weapon_level": 4,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 0,
+      "cards_remaining": 27,
+      "deck_margin": 0.5362523493408174,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.46374765065918255
+    },
+    {
+      "step": 19,
+      "room_cards": [
+        {
+          "symbol": "2",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 2,
+          "id": 43
+        },
+        {
+          "symbol": "5",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
           "val": 5,
-          "id": 27
+          "id": 14
+        },
+        {
+          "symbol": "J",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 11,
+          "id": 21
+        },
+        {
+          "symbol": "2",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 2,
+          "id": 8
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -123,
+      "hp": 9,
+      "weapon_level": 4,
+      "weapon_max_monster_level": 8,
+      "can_avoid": 1,
+      "cards_remaining": 26,
+      "deck_margin": 0.5325569848139591,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4674430151860409
+    },
+    {
+      "step": 20,
+      "room_cards": [
+        {
+          "symbol": "5",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 5,
+          "id": 14
+        },
+        {
+          "symbol": "J",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 11,
+          "id": 21
+        },
+        {
+          "symbol": "2",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 2,
+          "id": 8
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -121,
+      "hp": 9,
+      "weapon_level": 4,
+      "weapon_max_monster_level": 2,
+      "can_avoid": 0,
+      "cards_remaining": 25,
+      "deck_margin": 0.547230624519723,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.45276937548027696
+    },
+    {
+      "step": 21,
+      "room_cards": [
+        {
+          "symbol": "J",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 11,
+          "id": 21
+        },
+        {
+          "symbol": "2",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 2,
+          "id": 8
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -116,
+      "hp": 14,
+      "weapon_level": 4,
+      "weapon_max_monster_level": 2,
+      "can_avoid": 0,
+      "cards_remaining": 24,
+      "deck_margin": 0.5444761007101994,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.45552389928980064
+    },
+    {
+      "step": 22,
+      "room_cards": [
+        {
+          "symbol": "J",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 11,
+          "id": 21
+        },
+        {
+          "symbol": "5",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 5,
+          "id": 40
         },
         {
           "symbol": "10",
@@ -507,277 +1081,314 @@
           "id": 9
         },
         {
-          "symbol": "9",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 9,
-          "id": 1
-        },
-        {
-          "symbol": "3",
+          "symbol": "2",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
-          "val": 3,
-          "id": 29
+          "val": 2,
+          "id": 30
         }
       ],
-      "action": 1,
-      "action_str": "2",
-      "score": -155,
-      "hp": 6,
-      "weapon_level": 5,
+      "action": 0,
+      "action_str": "1",
+      "score": -116,
+      "hp": 14,
+      "weapon_level": 2,
       "weapon_max_monster_level": 15,
       "can_avoid": 1,
-      "cards_remaining": 35,
-      "deck_margin": 0.5920802715839187,
+      "cards_remaining": 23,
+      "deck_margin": 0.53649269943599,
       "deck_warnings": [],
       "deck_critical_issues": [],
-      "future_danger": 0.40791972841608126
+      "future_danger": 0.46350730056401
     },
     {
-      "step": 11,
+      "step": 23,
       "room_cards": [
         {
           "symbol": "5",
           "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
             "class": "monster"
           },
           "val": 5,
-          "id": 27
+          "id": 40
         },
         {
-          "symbol": "9",
+          "symbol": "10",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
           },
-          "val": 9,
-          "id": 1
+          "val": 10,
+          "id": 9
         },
         {
-          "symbol": "3",
+          "symbol": "2",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
-          "val": 3,
-          "id": 29
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -145,
-      "hp": 16,
-      "weapon_level": 5,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 0,
-      "cards_remaining": 34,
-      "deck_margin": 0.5858256448753428,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.41417435512465717
-    },
-    {
-      "step": 12,
-      "room_cards": [
-        {
-          "symbol": "9",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 9,
-          "id": 1
-        },
-        {
-          "symbol": "3",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 3,
-          "id": 29
+          "val": 2,
+          "id": 30
         }
       ],
       "action": 1,
       "action_str": "2",
-      "score": -140,
-      "hp": 16,
+      "score": -114,
+      "hp": 5,
+      "weapon_level": 2,
+      "weapon_max_monster_level": 11,
+      "can_avoid": 0,
+      "cards_remaining": 22,
+      "deck_margin": 0.5216187182407738,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.47838128175922623
+    },
+    {
+      "step": 24,
+      "room_cards": [
+        {
+          "symbol": "5",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 5,
+          "id": 40
+        },
+        {
+          "symbol": "2",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 2,
+          "id": 30
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -104,
+      "hp": 15,
+      "weapon_level": 2,
+      "weapon_max_monster_level": 11,
+      "can_avoid": 0,
+      "cards_remaining": 21,
+      "deck_margin": 0.5275748048575126,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4724251951424874
+    },
+    {
+      "step": 25,
+      "room_cards": [
+        {
+          "symbol": "5",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 5,
+          "id": 40
+        },
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 6,
+          "id": 4
+        },
+        {
+          "symbol": "5",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 5,
+          "id": 5
+        },
+        {
+          "symbol": "10",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 10,
+          "id": 0
+        }
+      ],
+      "action": 2,
+      "action_str": "3",
+      "score": -102,
+      "hp": 15,
+      "weapon_level": 2,
+      "weapon_max_monster_level": 2,
+      "can_avoid": 1,
+      "cards_remaining": 20,
+      "deck_margin": 0.5485222269079842,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.45147777309201576
+    },
+    {
+      "step": 26,
+      "room_cards": [
+        {
+          "symbol": "5",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 5,
+          "id": 40
+        },
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 6,
+          "id": 4
+        },
+        {
+          "symbol": "10",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 10,
+          "id": 0
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -102,
+      "hp": 15,
+      "weapon_level": 5,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 0,
+      "cards_remaining": 19,
+      "deck_margin": 0.5477190178001847,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.4522809821998153
+    },
+    {
+      "step": 27,
+      "room_cards": [
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 6,
+          "id": 4
+        },
+        {
+          "symbol": "10",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 10,
+          "id": 0
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -97,
+      "hp": 15,
       "weapon_level": 5,
       "weapon_max_monster_level": 5,
       "can_avoid": 0,
-      "cards_remaining": 33,
-      "deck_margin": 0.5976513266409542,
+      "cards_remaining": 18,
+      "deck_margin": 0.5621430558193684,
       "deck_warnings": [],
       "deck_critical_issues": [],
-      "future_danger": 0.4023486733590458
+      "future_danger": 0.4378569441806316
     },
     {
-      "step": 13,
+      "step": 28,
       "room_cards": [
         {
-          "symbol": "9",
+          "symbol": "6",
           "suit": {
             "symbol": "\u2666\ufe0f",
             "name": "diamond",
             "class": "weapon"
           },
-          "val": 9,
-          "id": 1
+          "val": 6,
+          "id": 4
         },
         {
-          "symbol": "J",
+          "symbol": "10",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 10,
+          "id": 22
+        },
+        {
+          "symbol": "3",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 3,
+          "id": 16
+        },
+        {
+          "symbol": "6",
           "suit": {
             "symbol": "\u2663\ufe0f",
             "name": "club",
             "class": "monster"
           },
-          "val": 11,
-          "id": 34
-        },
-        {
-          "symbol": "A",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 14,
-          "id": 31
-        },
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 4,
-          "id": 6
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -137,
-      "hp": 16,
-      "weapon_level": 5,
-      "weapon_max_monster_level": 3,
-      "can_avoid": 1,
-      "cards_remaining": 32,
-      "deck_margin": 0.6163519393473584,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.38364806065264156
-    },
-    {
-      "step": 14,
-      "room_cards": [
-        {
-          "symbol": "J",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 11,
-          "id": 34
-        },
-        {
-          "symbol": "A",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 14,
-          "id": 31
-        },
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 4,
-          "id": 6
+          "val": 6,
+          "id": 39
         }
       ],
       "action": 1,
       "action_str": "2",
-      "score": -137,
-      "hp": 16,
-      "weapon_level": 9,
+      "score": -97,
+      "hp": 15,
+      "weapon_level": 10,
       "weapon_max_monster_level": 15,
-      "can_avoid": 0,
-      "cards_remaining": 31,
-      "deck_margin": 0.6154598133632859,
+      "can_avoid": 1,
+      "cards_remaining": 17,
+      "deck_margin": 0.5566424616423036,
       "deck_warnings": [],
       "deck_critical_issues": [],
-      "future_danger": 0.3845401866367141
+      "future_danger": 0.4433575383576964
     },
     {
-      "step": 15,
+      "step": 29,
       "room_cards": [
-        {
-          "symbol": "J",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 11,
-          "id": 34
-        },
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 4,
-          "id": 6
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -128,
-      "hp": 11,
-      "weapon_level": 9,
-      "weapon_max_monster_level": 14,
-      "can_avoid": 0,
-      "cards_remaining": 30,
-      "deck_margin": 0.5974374120255926,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.40256258797440736
-    },
-    {
-      "step": 16,
-      "room_cards": [
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 4,
-          "id": 6
-        },
         {
           "symbol": "6",
           "suit": {
@@ -791,49 +1402,231 @@
         {
           "symbol": "3",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
           },
           "val": 3,
-          "id": 7
+          "id": 16
         },
         {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 2,
-          "id": 8
-        }
-      ],
-      "action": 4,
-      "action_str": "a",
-      "score": -119,
-      "hp": 9,
-      "weapon_level": 9,
-      "weapon_max_monster_level": 11,
-      "can_avoid": 1,
-      "cards_remaining": 29,
-      "deck_margin": 0.5755709107966799,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.4244290892033201
-    },
-    {
-      "step": 17,
-      "room_cards": [
-        {
-          "symbol": "4",
+          "symbol": "6",
           "suit": {
             "symbol": "\u2663\ufe0f",
             "name": "club",
             "class": "monster"
           },
-          "val": 4,
-          "id": 41
+          "val": 6,
+          "id": 39
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -87,
+      "hp": 15,
+      "weapon_level": 10,
+      "weapon_max_monster_level": 10,
+      "can_avoid": 0,
+      "cards_remaining": 16,
+      "deck_margin": 0.5359287098390237,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.46407129016097626
+    },
+    {
+      "step": 30,
+      "room_cards": [
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 6,
+          "id": 4
+        },
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 6,
+          "id": 39
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -84,
+      "hp": 18,
+      "weapon_level": 10,
+      "weapon_max_monster_level": 10,
+      "can_avoid": 0,
+      "cards_remaining": 15,
+      "deck_margin": 0.5435977181034866,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.45640228189651344
+    },
+    {
+      "step": 31,
+      "room_cards": [
+        {
+          "symbol": "6",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 6,
+          "id": 4
+        },
+        {
+          "symbol": "8",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 8,
+          "id": 11
+        },
+        {
+          "symbol": "2",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 2,
+          "id": 17
+        },
+        {
+          "symbol": "A",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 14,
+          "id": 31
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -78,
+      "hp": 18,
+      "weapon_level": 10,
+      "weapon_max_monster_level": 6,
+      "can_avoid": 1,
+      "cards_remaining": 14,
+      "deck_margin": 0.549995869249587,
+      "deck_warnings": [],
+      "deck_critical_issues": [],
+      "future_danger": 0.450004130750413
+    },
+    {
+      "step": 32,
+      "room_cards": [
+        {
+          "symbol": "8",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 8,
+          "id": 11
+        },
+        {
+          "symbol": "2",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 2,
+          "id": 17
+        },
+        {
+          "symbol": "A",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 14,
+          "id": 31
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -78,
+      "hp": 18,
+      "weapon_level": 6,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 0,
+      "cards_remaining": 13,
+      "deck_margin": 0.508155576209294,
+      "deck_warnings": [],
+      "deck_critical_issues": [
+        "No weapons available in first third of deck for early monsters"
+      ],
+      "future_danger": 0.49184442379070603
+    },
+    {
+      "step": 33,
+      "room_cards": [
+        {
+          "symbol": "8",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 8,
+          "id": 11
+        },
+        {
+          "symbol": "A",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 14,
+          "id": 31
+        }
+      ],
+      "action": 1,
+      "action_str": "2",
+      "score": -76,
+      "hp": 20,
+      "weapon_level": 6,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 0,
+      "cards_remaining": 12,
+      "deck_margin": 0.5116752343289521,
+      "deck_warnings": [],
+      "deck_critical_issues": [
+        "No weapons available in first third of deck for early monsters"
+      ],
+      "future_danger": 0.4883247656710479
+    },
+    {
+      "step": 34,
+      "room_cards": [
+        {
+          "symbol": "8",
+          "suit": {
+            "symbol": "\u2665\ufe0f",
+            "name": "heart",
+            "class": "health"
+          },
+          "val": 8,
+          "id": 11
         },
         {
           "symbol": "9",
@@ -846,571 +1639,44 @@
           "id": 23
         },
         {
-          "symbol": "9",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 9,
-          "id": 10
-        },
-        {
-          "symbol": "10",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 10,
-          "id": 35
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -119,
-      "hp": 9,
-      "weapon_level": 9,
-      "weapon_max_monster_level": 11,
-      "can_avoid": 0,
-      "cards_remaining": 29,
-      "deck_margin": 0.5448173544721893,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.45518264552781074
-    },
-    {
-      "step": 18,
-      "room_cards": [
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 4,
-          "id": 41
-        },
-        {
-          "symbol": "9",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 9,
-          "id": 10
-        },
-        {
-          "symbol": "10",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 10,
-          "id": 35
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -110,
-      "hp": 9,
-      "weapon_level": 9,
-      "weapon_max_monster_level": 9,
-      "can_avoid": 0,
-      "cards_remaining": 28,
-      "deck_margin": 0.5378987591636925,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.46210124083630755
-    },
-    {
-      "step": 19,
-      "room_cards": [
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 4,
-          "id": 41
-        },
-        {
-          "symbol": "10",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 10,
-          "id": 35
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -101,
-      "hp": 18,
-      "weapon_level": 9,
-      "weapon_max_monster_level": 9,
-      "can_avoid": 0,
-      "cards_remaining": 27,
-      "deck_margin": 0.5363704432630939,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.4636295567369061
-    },
-    {
-      "step": 20,
-      "room_cards": [
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 4,
-          "id": 41
-        },
-        {
-          "symbol": "7",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 7,
-          "id": 3
-        },
-        {
-          "symbol": "10",
+          "symbol": "A",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
-          "val": 10,
-          "id": 22
+          "val": 14,
+          "id": 18
         },
         {
           "symbol": "8",
           "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
             "class": "monster"
           },
           "val": 8,
-          "id": 37
+          "id": 24
         }
       ],
-      "action": 0,
-      "action_str": "1",
-      "score": -101,
-      "hp": 8,
-      "weapon_level": 9,
-      "weapon_max_monster_level": 9,
+      "action": 1,
+      "action_str": "2",
+      "score": -70,
+      "hp": 12,
+      "weapon_level": 6,
+      "weapon_max_monster_level": 14,
       "can_avoid": 1,
-      "cards_remaining": 26,
-      "deck_margin": 0.5266661949362411,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.4733338050637589
-    },
-    {
-      "step": 21,
-      "room_cards": [
-        {
-          "symbol": "7",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 7,
-          "id": 3
-        },
-        {
-          "symbol": "10",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 10,
-          "id": 22
-        },
-        {
-          "symbol": "8",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 8,
-          "id": 37
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -97,
-      "hp": 8,
-      "weapon_level": 9,
-      "weapon_max_monster_level": 4,
-      "can_avoid": 0,
-      "cards_remaining": 25,
-      "deck_margin": 0.5312786151285052,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.46872138487149484
-    },
-    {
-      "step": 22,
-      "room_cards": [
-        {
-          "symbol": "10",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 10,
-          "id": 22
-        },
-        {
-          "symbol": "8",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 8,
-          "id": 37
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -97,
-      "hp": 8,
-      "weapon_level": 7,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 0,
-      "cards_remaining": 24,
-      "deck_margin": 0.4931945648930265,
+      "cards_remaining": 11,
+      "deck_margin": 0.5099942456510543,
       "deck_warnings": [],
       "deck_critical_issues": [
         "No weapons available in first third of deck for early monsters"
       ],
-      "future_danger": 0.5068054351069735
+      "future_danger": 0.49000575434894567
     },
     {
-      "step": 23,
+      "step": 35,
       "room_cards": [
-        {
-          "symbol": "8",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 8,
-          "id": 37
-        },
-        {
-          "symbol": "7",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 7,
-          "id": 25
-        },
-        {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 2,
-          "id": 43
-        },
-        {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 2,
-          "id": 17
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -90,
-      "hp": 5,
-      "weapon_level": 7,
-      "weapon_max_monster_level": 10,
-      "can_avoid": 1,
-      "cards_remaining": 23,
-      "deck_margin": 0.4859408681857359,
-      "deck_warnings": [],
-      "deck_critical_issues": [
-        "No weapons available in first third of deck for early monsters"
-      ],
-      "future_danger": 0.5140591318142641
-    },
-    {
-      "step": 24,
-      "room_cards": [
-        {
-          "symbol": "7",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 7,
-          "id": 25
-        },
-        {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 2,
-          "id": 43
-        },
-        {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 2,
-          "id": 17
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -83,
-      "hp": 4,
-      "weapon_level": 7,
-      "weapon_max_monster_level": 8,
-      "can_avoid": 0,
-      "cards_remaining": 22,
-      "deck_margin": 0.4864594380905313,
-      "deck_warnings": [],
-      "deck_critical_issues": [
-        "No weapons available in first third of deck for early monsters"
-      ],
-      "future_danger": 0.5135405619094686
-    },
-    {
-      "step": 25,
-      "room_cards": [
-        {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 2,
-          "id": 43
-        },
-        {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 2,
-          "id": 17
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -76,
-      "hp": 4,
-      "weapon_level": 7,
-      "weapon_max_monster_level": 7,
-      "can_avoid": 0,
-      "cards_remaining": 21,
-      "deck_margin": 0.4886035147226039,
-      "deck_warnings": [],
-      "deck_critical_issues": [
-        "No weapons available in first third of deck for early monsters"
-      ],
-      "future_danger": 0.5113964852773961
-    },
-    {
-      "step": 26,
-      "room_cards": [
-        {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 2,
-          "id": 43
-        },
-        {
-          "symbol": "6",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 6,
-          "id": 39
-        },
-        {
-          "symbol": "3",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 3,
-          "id": 42
-        },
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 4,
-          "id": 15
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -74,
-      "hp": 6,
-      "weapon_level": 7,
-      "weapon_max_monster_level": 7,
-      "can_avoid": 1,
-      "cards_remaining": 20,
-      "deck_margin": 0.4952336425638768,
-      "deck_warnings": [],
-      "deck_critical_issues": [
-        "No weapons available in first third of deck for early monsters"
-      ],
-      "future_danger": 0.5047663574361232
-    },
-    {
-      "step": 27,
-      "room_cards": [
-        {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 2,
-          "id": 43
-        },
-        {
-          "symbol": "3",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 3,
-          "id": 42
-        },
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 4,
-          "id": 15
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -68,
-      "hp": 6,
-      "weapon_level": 7,
-      "weapon_max_monster_level": 6,
-      "can_avoid": 0,
-      "cards_remaining": 19,
-      "deck_margin": 0.49809122313820564,
-      "deck_warnings": [],
-      "deck_critical_issues": [
-        "No weapons available in first third of deck for early monsters"
-      ],
-      "future_danger": 0.5019087768617944
-    },
-    {
-      "step": 28,
-      "room_cards": [
-        {
-          "symbol": "3",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 3,
-          "id": 42
-        },
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 4,
-          "id": 15
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -66,
-      "hp": 6,
-      "weapon_level": 7,
-      "weapon_max_monster_level": 2,
-      "can_avoid": 0,
-      "cards_remaining": 18,
-      "deck_margin": 0.5184251573538028,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.4815748426461972
-    },
-    {
-      "step": 29,
-      "room_cards": [
-        {
-          "symbol": "3",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 3,
-          "id": 42
-        },
         {
           "symbol": "8",
           "suit": {
@@ -1422,15 +1688,44 @@
           "id": 11
         },
         {
-          "symbol": "6",
+          "symbol": "A",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
-          "val": 6,
-          "id": 26
+          "val": 14,
+          "id": 18
         },
+        {
+          "symbol": "8",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 8,
+          "id": 24
+        }
+      ],
+      "action": 0,
+      "action_str": "1",
+      "score": -64,
+      "hp": 9,
+      "weapon_level": 6,
+      "weapon_max_monster_level": 9,
+      "can_avoid": 0,
+      "cards_remaining": 10,
+      "deck_margin": 0.5166655174517957,
+      "deck_warnings": [],
+      "deck_critical_issues": [
+        "No weapons available in first third of deck for early monsters"
+      ],
+      "future_danger": 0.4833344825482043
+    },
+    {
+      "step": 36,
+      "room_cards": [
         {
           "symbol": "A",
           "suit": {
@@ -1440,384 +1735,67 @@
           },
           "val": 14,
           "id": 18
-        }
-      ],
-      "action": 4,
-      "action_str": "a",
-      "score": -62,
-      "hp": 10,
-      "weapon_level": 7,
-      "weapon_max_monster_level": 2,
-      "can_avoid": 1,
-      "cards_remaining": 17,
-      "deck_margin": 0.5218380638481741,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.4781619361518259
-    },
-    {
-      "step": 30,
-      "room_cards": [
+        },
         {
           "symbol": "8",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
           },
           "val": 8,
-          "id": 2
-        },
-        {
-          "symbol": "6",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 6,
-          "id": 13
-        },
-        {
-          "symbol": "3",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 3,
-          "id": 16
-        },
-        {
-          "symbol": "K",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 13,
-          "id": 32
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -62,
-      "hp": 10,
-      "weapon_level": 7,
-      "weapon_max_monster_level": 2,
-      "can_avoid": 0,
-      "cards_remaining": 17,
-      "deck_margin": 0.5662881318398538,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.4337118681601462
-    },
-    {
-      "step": 31,
-      "room_cards": [
-        {
-          "symbol": "6",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 6,
-          "id": 13
-        },
-        {
-          "symbol": "3",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 3,
-          "id": 16
-        },
-        {
-          "symbol": "K",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 13,
-          "id": 32
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -62,
-      "hp": 10,
-      "weapon_level": 8,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 0,
-      "cards_remaining": 16,
-      "deck_margin": 0.5586634540983868,
-      "deck_warnings": [],
-      "deck_critical_issues": [
-        "No weapons available in first third of deck for early monsters"
-      ],
-      "future_danger": 0.4413365459016132
-    },
-    {
-      "step": 32,
-      "room_cards": [
-        {
-          "symbol": "3",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 3,
-          "id": 16
-        },
-        {
-          "symbol": "K",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 13,
-          "id": 32
+          "id": 24
         }
       ],
       "action": 1,
       "action_str": "2",
       "score": -56,
-      "hp": 16,
-      "weapon_level": 8,
-      "weapon_max_monster_level": 15,
+      "hp": 17,
+      "weapon_level": 6,
+      "weapon_max_monster_level": 9,
       "can_avoid": 0,
-      "cards_remaining": 15,
-      "deck_margin": 0.568561988049004,
-      "deck_warnings": [],
+      "cards_remaining": 9,
+      "deck_margin": 0.5077667079279862,
+      "deck_warnings": [
+        "Potions are far from monsters (avg effective distance: inf)"
+      ],
       "deck_critical_issues": [
         "No weapons available in first third of deck for early monsters"
       ],
-      "future_danger": 0.43143801195099596
-    },
-    {
-      "step": 33,
-      "room_cards": [
-        {
-          "symbol": "3",
-          "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
-          },
-          "val": 3,
-          "id": 16
-        },
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 4,
-          "id": 28
-        },
-        {
-          "symbol": "8",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 8,
-          "id": 24
-        },
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 5,
-          "id": 40
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -48,
-      "hp": 11,
-      "weapon_level": 8,
-      "weapon_max_monster_level": 13,
-      "can_avoid": 1,
-      "cards_remaining": 14,
-      "deck_margin": 0.5480726418417883,
-      "deck_warnings": [],
-      "deck_critical_issues": [
-        "No weapons available in first third of deck for early monsters"
-      ],
-      "future_danger": 0.4519273581582117
-    },
-    {
-      "step": 34,
-      "room_cards": [
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 4,
-          "id": 28
-        },
-        {
-          "symbol": "8",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 8,
-          "id": 24
-        },
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 5,
-          "id": 40
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -45,
-      "hp": 14,
-      "weapon_level": 8,
-      "weapon_max_monster_level": 13,
-      "can_avoid": 0,
-      "cards_remaining": 13,
-      "deck_margin": 0.5288661563629814,
-      "deck_warnings": [],
-      "deck_critical_issues": [
-        "No weapons available in first third of deck for early monsters"
-      ],
-      "future_danger": 0.4711338436370186
-    },
-    {
-      "step": 35,
-      "room_cards": [
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 4,
-          "id": 28
-        },
-        {
-          "symbol": "5",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 5,
-          "id": 40
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -37,
-      "hp": 14,
-      "weapon_level": 8,
-      "weapon_max_monster_level": 8,
-      "can_avoid": 0,
-      "cards_remaining": 12,
-      "deck_margin": 0.5258565893088535,
-      "deck_warnings": [],
-      "deck_critical_issues": [
-        "No weapons available in first third of deck for early monsters"
-      ],
-      "future_danger": 0.4741434106911465
-    },
-    {
-      "step": 36,
-      "room_cards": [
-        {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 4,
-          "id": 28
-        },
-        {
-          "symbol": "7",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 7,
-          "id": 38
-        },
-        {
-          "symbol": "Q",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 12,
-          "id": 33
-        },
-        {
-          "symbol": "6",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 6,
-          "id": 4
-        }
-      ],
-      "action": 0,
-      "action_str": "1",
-      "score": -32,
-      "hp": 14,
-      "weapon_level": 8,
-      "weapon_max_monster_level": 5,
-      "can_avoid": 1,
-      "cards_remaining": 11,
-      "deck_margin": 0.5557386986105597,
-      "deck_warnings": [],
-      "deck_critical_issues": [
-        "No weapons available in first third of deck for early monsters"
-      ],
-      "future_danger": 0.4442613013894403
+      "future_danger": 0.49223329207201383
     },
     {
       "step": 37,
       "room_cards": [
         {
+          "symbol": "A",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 14,
+          "id": 18
+        },
+        {
           "symbol": "7",
           "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
             "class": "monster"
           },
           "val": 7,
-          "id": 38
+          "id": 25
+        },
+        {
+          "symbol": "5",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 5,
+          "id": 27
         },
         {
           "symbol": "Q",
@@ -1828,171 +1806,177 @@
           },
           "val": 12,
           "id": 33
-        },
-        {
-          "symbol": "6",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 6,
-          "id": 4
         }
       ],
-      "action": 2,
-      "action_str": "3",
-      "score": -28,
-      "hp": 14,
-      "weapon_level": 8,
-      "weapon_max_monster_level": 4,
-      "can_avoid": 0,
-      "cards_remaining": 10,
-      "deck_margin": 0.5997268626171028,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.40027313738289716
+      "action": 4,
+      "action_str": "a",
+      "score": -50,
+      "hp": 15,
+      "weapon_level": 6,
+      "weapon_max_monster_level": 8,
+      "can_avoid": 1,
+      "cards_remaining": 8,
+      "deck_margin": 0.511264689843264,
+      "deck_warnings": [
+        "Potions are far from monsters (avg effective distance: inf)"
+      ],
+      "deck_critical_issues": [
+        "No weapons available in first third of deck for early monsters"
+      ],
+      "future_danger": 0.488735310156736
     },
     {
       "step": 38,
       "room_cards": [
         {
-          "symbol": "7",
+          "symbol": "K",
           "suit": {
             "symbol": "\u2663\ufe0f",
             "name": "club",
             "class": "monster"
           },
-          "val": 7,
-          "id": 38
+          "val": 13,
+          "id": 32
         },
         {
-          "symbol": "Q",
+          "symbol": "9",
+          "suit": {
+            "symbol": "\u2666\ufe0f",
+            "name": "diamond",
+            "class": "weapon"
+          },
+          "val": 9,
+          "id": 1
+        },
+        {
+          "symbol": "3",
           "suit": {
             "symbol": "\u2663\ufe0f",
             "name": "club",
             "class": "monster"
           },
-          "val": 12,
-          "id": 33
+          "val": 3,
+          "id": 42
+        },
+        {
+          "symbol": "J",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 11,
+          "id": 34
         }
       ],
       "action": 1,
       "action_str": "2",
-      "score": -28,
-      "hp": 14,
+      "score": -50,
+      "hp": 15,
       "weapon_level": 6,
-      "weapon_max_monster_level": 15,
+      "weapon_max_monster_level": 8,
       "can_avoid": 0,
-      "cards_remaining": 9,
-      "deck_margin": 0.6018366772625752,
-      "deck_warnings": [],
+      "cards_remaining": 8,
+      "deck_margin": 0.48674838461829173,
+      "deck_warnings": [
+        "Potions are far from monsters (avg effective distance: inf)"
+      ],
       "deck_critical_issues": [],
-      "future_danger": 0.39816332273742483
+      "future_danger": 0.5132516153817083
     },
     {
       "step": 39,
       "room_cards": [
         {
-          "symbol": "7",
+          "symbol": "K",
           "suit": {
             "symbol": "\u2663\ufe0f",
             "name": "club",
             "class": "monster"
           },
-          "val": 7,
-          "id": 38
-        },
-        {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 2,
-          "id": 8
+          "val": 13,
+          "id": 32
         },
         {
           "symbol": "3",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
           },
           "val": 3,
-          "id": 7
+          "id": 42
         },
         {
-          "symbol": "4",
+          "symbol": "J",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
           },
-          "val": 4,
-          "id": 6
+          "val": 11,
+          "id": 34
         }
       ],
       "action": 0,
       "action_str": "1",
-      "score": -22,
-      "hp": 8,
-      "weapon_level": 6,
-      "weapon_max_monster_level": 12,
-      "can_avoid": 1,
-      "cards_remaining": 8,
-      "deck_margin": 0.5686440676307456,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.4313559323692544
+      "score": -50,
+      "hp": 15,
+      "weapon_level": 9,
+      "weapon_max_monster_level": 15,
+      "can_avoid": 0,
+      "cards_remaining": 7,
+      "deck_margin": 0.3337661988248407,
+      "deck_warnings": [
+        "Weapons are far from monsters (avg effective distance: inf)",
+        "Potions are far from monsters (avg effective distance: inf)"
+      ],
+      "deck_critical_issues": [
+        "No weapons available in first third of deck for early monsters"
+      ],
+      "future_danger": 0.6662338011751593
     },
     {
       "step": 40,
       "room_cards": [
         {
-          "symbol": "2",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 2,
-          "id": 8
-        },
-        {
           "symbol": "3",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
           },
           "val": 3,
-          "id": 7
+          "id": 42
         },
         {
-          "symbol": "4",
+          "symbol": "J",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
           },
-          "val": 4,
-          "id": 6
+          "val": 11,
+          "id": 34
         }
       ],
-      "action": 0,
-      "action_str": "1",
-      "score": -16,
-      "hp": 7,
-      "weapon_level": 6,
-      "weapon_max_monster_level": 7,
+      "action": 1,
+      "action_str": "2",
+      "score": -41,
+      "hp": 11,
+      "weapon_level": 9,
+      "weapon_max_monster_level": 13,
       "can_avoid": 0,
-      "cards_remaining": 7,
-      "deck_margin": 0.6208530099363386,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.37914699006366137
+      "cards_remaining": 6,
+      "deck_margin": 0.29645129398112535,
+      "deck_warnings": [
+        "Weapons are far from monsters (avg effective distance: inf)",
+        "Potions are far from monsters (avg effective distance: inf)"
+      ],
+      "deck_critical_issues": [
+        "No weapons available in first third of deck for early monsters"
+      ],
+      "future_danger": 0.7035487060188746
     },
     {
       "step": 41,
@@ -2000,69 +1984,94 @@
         {
           "symbol": "3",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
           },
           "val": 3,
-          "id": 7
+          "id": 42
         },
         {
-          "symbol": "4",
+          "symbol": "5",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
           },
-          "val": 4,
-          "id": 6
+          "val": 5,
+          "id": 27
+        },
+        {
+          "symbol": "A",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 14,
+          "id": 18
+        },
+        {
+          "symbol": "Q",
+          "suit": {
+            "symbol": "\u2663\ufe0f",
+            "name": "club",
+            "class": "monster"
+          },
+          "val": 12,
+          "id": 33
         }
       ],
-      "action": 0,
-      "action_str": "1",
-      "score": -16,
-      "hp": 7,
-      "weapon_level": 2,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 0,
-      "cards_remaining": 6,
-      "deck_margin": 0.6176784067617354,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.38232159323826465
+      "action": 4,
+      "action_str": "a",
+      "score": -32,
+      "hp": 9,
+      "weapon_level": 9,
+      "weapon_max_monster_level": 11,
+      "can_avoid": 1,
+      "cards_remaining": 5,
+      "deck_margin": 0.2818620174192409,
+      "deck_warnings": [
+        "Weapons are far from monsters (avg effective distance: inf)",
+        "Potions are far from monsters (avg effective distance: inf)"
+      ],
+      "deck_critical_issues": [
+        "No weapons available in first third of deck for early monsters"
+      ],
+      "future_danger": 0.7181379825807591
     },
     {
       "step": 42,
       "room_cards": [
         {
-          "symbol": "4",
-          "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
-          },
-          "val": 4,
-          "id": 6
-        },
-        {
-          "symbol": "6",
+          "symbol": "7",
           "suit": {
             "symbol": "\u2660\ufe0f",
             "name": "spade",
             "class": "monster"
           },
-          "val": 6,
-          "id": 26
+          "val": 7,
+          "id": 25
         },
         {
-          "symbol": "8",
+          "symbol": "5",
           "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
           },
-          "val": 8,
-          "id": 11
+          "val": 5,
+          "id": 27
+        },
+        {
+          "symbol": "A",
+          "suit": {
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
+          },
+          "val": 14,
+          "id": 18
         },
         {
           "symbol": "3",
@@ -2075,41 +2084,46 @@
           "id": 42
         }
       ],
-      "action": 1,
-      "action_str": "2",
-      "score": -16,
-      "hp": 7,
-      "weapon_level": 3,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 1,
+      "action": 0,
+      "action_str": "1",
+      "score": -32,
+      "hp": 9,
+      "weapon_level": 9,
+      "weapon_max_monster_level": 11,
+      "can_avoid": 0,
       "cards_remaining": 5,
-      "deck_margin": 0.6256784067617354,
-      "deck_warnings": [],
-      "deck_critical_issues": [],
-      "future_danger": 0.37432159323826464
+      "deck_margin": 0.3079975204013729,
+      "deck_warnings": [
+        "Weapons are far from monsters (avg effective distance: inf)",
+        "Potions are far from monsters (avg effective distance: inf)"
+      ],
+      "deck_critical_issues": [
+        "No weapons available in first third of deck for early monsters"
+      ],
+      "future_danger": 0.692002479598627
     },
     {
       "step": 43,
       "room_cards": [
         {
-          "symbol": "4",
+          "symbol": "5",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
           },
-          "val": 4,
-          "id": 6
+          "val": 5,
+          "id": 27
         },
         {
-          "symbol": "8",
+          "symbol": "A",
           "suit": {
-            "symbol": "\u2665\ufe0f",
-            "name": "heart",
-            "class": "health"
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
           },
-          "val": 8,
-          "id": 11
+          "val": 14,
+          "id": 18
         },
         {
           "symbol": "3",
@@ -2122,33 +2136,36 @@
           "id": 42
         }
       ],
-      "action": 1,
-      "action_str": "2",
-      "score": -13,
-      "hp": 4,
-      "weapon_level": 3,
-      "weapon_max_monster_level": 6,
+      "action": 0,
+      "action_str": "1",
+      "score": -25,
+      "hp": 9,
+      "weapon_level": 9,
+      "weapon_max_monster_level": 7,
       "can_avoid": 0,
       "cards_remaining": 4,
-      "deck_margin": 0.5225000000000001,
+      "deck_margin": 0.31248774791267003,
       "deck_warnings": [
-        "Resources are clustered (balance score: 0.33)"
+        "Weapons are far from monsters (avg effective distance: inf)",
+        "Potions are far from monsters (avg effective distance: inf)"
       ],
-      "deck_critical_issues": [],
-      "future_danger": 0.4774999999999999
+      "deck_critical_issues": [
+        "No weapons available in first third of deck for early monsters"
+      ],
+      "future_danger": 0.68751225208733
     },
     {
       "step": 44,
       "room_cards": [
         {
-          "symbol": "4",
+          "symbol": "A",
           "suit": {
-            "symbol": "\u2666\ufe0f",
-            "name": "diamond",
-            "class": "weapon"
+            "symbol": "\u2660\ufe0f",
+            "name": "spade",
+            "class": "monster"
           },
-          "val": 4,
-          "id": 6
+          "val": 14,
+          "id": 18
         },
         {
           "symbol": "3",
@@ -2161,35 +2178,28 @@
           "id": 42
         }
       ],
-      "action": 0,
-      "action_str": "1",
-      "score": -5,
-      "hp": 12,
-      "weapon_level": 3,
-      "weapon_max_monster_level": 6,
+      "action": 1,
+      "action_str": "2",
+      "score": -20,
+      "hp": 9,
+      "weapon_level": 9,
+      "weapon_max_monster_level": 5,
       "can_avoid": 0,
       "cards_remaining": 3,
-      "deck_margin": 0.36333333333333334,
+      "deck_margin": 0.3587730440916229,
       "deck_warnings": [
+        "Weapons are far from monsters (avg effective distance: inf)",
         "Potions are far from monsters (avg effective distance: inf)"
       ],
-      "deck_critical_issues": [],
-      "future_danger": 0.6366666666666667
+      "deck_critical_issues": [
+        "No weapons available in first third of deck for early monsters"
+      ],
+      "future_danger": 0.6412269559083771
     },
     {
       "step": 45,
       "room_cards": [
         {
-          "symbol": "3",
-          "suit": {
-            "symbol": "\u2663\ufe0f",
-            "name": "club",
-            "class": "monster"
-          },
-          "val": 3,
-          "id": 42
-        },
-        {
           "symbol": "A",
           "suit": {
             "symbol": "\u2660\ufe0f",
@@ -2198,94 +2208,34 @@
           },
           "val": 14,
           "id": 18
-        }
-      ],
-      "action": 4,
-      "action_str": "a",
-      "score": -5,
-      "hp": 12,
-      "weapon_level": 4,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 1,
-      "cards_remaining": 2,
-      "deck_margin": 0.22999999999999998,
-      "deck_warnings": [
-        "Weapons are far from monsters (avg effective distance: inf)",
-        "Potions are far from monsters (avg effective distance: inf)"
-      ],
-      "deck_critical_issues": [],
-      "future_danger": 0.77
-    },
-    {
-      "step": 46,
-      "room_cards": [
+        },
         {
-          "symbol": "3",
+          "symbol": "Q",
           "suit": {
             "symbol": "\u2663\ufe0f",
             "name": "club",
             "class": "monster"
           },
-          "val": 3,
-          "id": 42
-        },
-        {
-          "symbol": "A",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 14,
-          "id": 18
+          "val": 12,
+          "id": 33
         }
       ],
       "action": 0,
       "action_str": "1",
-      "score": -5,
-      "hp": 12,
-      "weapon_level": 4,
-      "weapon_max_monster_level": 15,
-      "can_avoid": 0,
-      "cards_remaining": 2,
-      "deck_margin": 0.22999999999999998,
-      "deck_warnings": [
-        "Weapons are far from monsters (avg effective distance: inf)",
-        "Potions are far from monsters (avg effective distance: inf)"
-      ],
-      "deck_critical_issues": [],
-      "future_danger": 0.77
-    },
-    {
-      "step": 47,
-      "room_cards": [
-        {
-          "symbol": "A",
-          "suit": {
-            "symbol": "\u2660\ufe0f",
-            "name": "spade",
-            "class": "monster"
-          },
-          "val": 14,
-          "id": 18
-        }
-      ],
-      "action": 1,
-      "action_str": "2",
-      "score": -2,
-      "hp": 12,
-      "weapon_level": 4,
+      "score": -17,
+      "hp": 9,
+      "weapon_level": 9,
       "weapon_max_monster_level": 3,
-      "can_avoid": 0,
-      "cards_remaining": 1,
-      "deck_margin": 0.33999999999999997,
+      "can_avoid": 1,
+      "cards_remaining": 2,
+      "deck_margin": 0.44999999999999996,
       "deck_warnings": [
         "Weapons are far from monsters (avg effective distance: inf)",
         "Potions are far from monsters (avg effective distance: inf)"
       ],
       "deck_critical_issues": [],
-      "future_danger": 0.66
+      "future_danger": 0.55
     }
   ],
-  "timestamp": "2026-02-06T14:50:34.058061"
+  "timestamp": "2026-02-06T15:56:45.110234"
 }

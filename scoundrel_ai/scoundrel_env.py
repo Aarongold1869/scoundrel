@@ -292,21 +292,22 @@ class ScoundrelEnv(gym.Env):
         # Reduced so damage doesn't overshadow necessary progress through dungeon
         hp_change = new_state['player_state']['hp'] - prev_state['player_state']['hp']
         if hp_change < 0:
-            damage = abs(hp_change)
             # Higher penalty when at low HP (exponential scaling)
             if prev_state['player_state']['hp'] < 5:
-                reward -= damage * 2.5  # Critical: -2.5 to -12.5 per damage
+                damage_multiplier = 2.5
+                # reward -= damage * 2.5  # Critical: -2.5 to -12.5 per damage
             elif prev_state['player_state']['hp'] < 10:
-                reward -= damage * 1.5  # Dangerous: -1.5 to -7.5 per damage
+                damage_multiplier = 1.5
+                # reward -= damage * 1.5  # Dangerous: -1.5 to -7.5 per damage
             else:
-                reward -= damage * 1.0  # Safe: -1.0 to -5.0 per damage
+                damage_multiplier = 1.0
+                # reward -= damage * 1.0  # Safe: -1.0 to -5.0 per damage
+
+            damage = abs(hp_change)
+            reward -= damage * damage_multiplier
         
         # 2. HEALING: Bonus scaled by HP deficit (healing when low HP is more valuable)
         if hp_change > 0 and card_interacted and card_interacted.suit['class'] == 'health':
-            potion_value = card_interacted.val
-            wasted = max(0, potion_value - hp_change)
-            
-            healing_multiplier = 0.5
             # # Scale healing reward by how much HP was needed (prev_hp)
             if prev_state['player_state']['hp'] < 5:
                 healing_multiplier = 3.0  # Critical healing is very valuable
@@ -316,21 +317,24 @@ class ScoundrelEnv(gym.Env):
                 healing_multiplier = 1.0  # Safe healing is neutral
             
             reward += hp_change * healing_multiplier
+
+            potion_value = card_interacted.val
+            wasted = max(0, potion_value - hp_change)
             reward -= wasted * 1.0  # Light penalty for waste
         
         # 3. WEAPON EQUIP: Bonus based on weapon strength, penalty for downgrading
         weapon_change = new_state['player_state']['weapon_level'] - prev_state['player_state']['weapon_level']
         if weapon_change > 0 and card_interacted and card_interacted.suit['class'] == 'weapon':
             new_weapon = new_state['player_state']['weapon_level']
-            reward += new_weapon * 0.5  # +0.5 to +5.0 based on weapon level
+            reward += new_weapon * 1.0  # +0.5 to +5.0 based on weapon level
 
         # 4. Fight MONSTERS:
         if card_interacted and card_interacted.suit['class'] == 'monster':
             monster_strength = card_interacted.val
-            reward += monster_strength * 0.5
-            if hp_change < monster_strength:
-                # bonus if you reduced damage with a weapon 
-                reward += max(1.0, monster_strength - new_state['player_state']['weapon_level']) * 2.0
+            reward += monster_strength * 1.0
+            # if hp_change < monster_strength:
+            #     # bonus if you reduced damage with a weapon 
+            #     reward += max(1.0, monster_strength - new_state['player_state']['weapon_level']) * 2.0
 
             # weapon_degredation = prev_state['player_state']['weapon_max_monster_level'] - new_state['player_state']['weapon_max_monster_level']
             # weapon_degredation_ratio = weapon_degredation / prev_state['player_state']['weapon_max_monster_level']

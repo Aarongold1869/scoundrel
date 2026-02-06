@@ -13,6 +13,7 @@ from scoundrel_ai.wrappers import (
     DeckGeneratorWrapper, 
     DFSEarlyTerminationWrapper,
     MaskedDQN, 
+    MaskedDQNPolicy,
     get_base_env
 )
 from scoundrel_ai.scoundrel_env import ScoundrelEnv
@@ -137,13 +138,16 @@ def train_dqn(
     else: 
         if not disable_action_masking:
             model_class = MaskedDQN
+            # policy = MaskedDQNPolicy
+            policy = "MlpPolicy"
             print('using MaskedDQN')
         else: 
             model_class = DQN
+            policy = "MlpPolicy"
             print('using DQN')
 
     model = model_class(
-        policy="MlpPolicy",
+        policy=policy,
         env=env,
         learning_rate=1e-4,  # Lower learning rate for stability
         buffer_size=200000,  # Larger buffer for more experience
@@ -295,9 +299,9 @@ def evaluate_model(
         episode_steps = []
         step_index = 0
         
-        print(f"\n{'='*60}")
-        print(f"Evaluation Episode {episode + 1}/{episodes}")
-        print(f"{'='*60}")
+        # print(f"\n{'='*60}")
+        # print(f"Evaluation Episode {episode + 1}/{episodes}")
+        # print(f"{'='*60}")
         
         while not done:
             if not is_vec_env:
