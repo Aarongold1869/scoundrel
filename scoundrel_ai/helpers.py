@@ -1,7 +1,7 @@
 import glob
 
 
-def get_tensorboard_log_name(algorithm, timesteps):
+def get_tensorboard_log_dir(algorithm, timesteps):
     """Generate tensorboard log directory name with iteration number
     
     Format: {ALGORITHM}_{timesteps}k_{iteration}

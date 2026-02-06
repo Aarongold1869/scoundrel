@@ -6,6 +6,7 @@ from scoundrel_ai.deck_analysis.deck_analyzer import DeckAnalyzer, SolvableDeckG
 from stable_baselines3 import DQN
 from stable_baselines3.dqn.policies import DQNPolicy
 from stable_baselines3.common.callbacks import BaseCallback
+from sb3_contrib import QRDQN
 
 import gymnasium as gym
 import numpy as np

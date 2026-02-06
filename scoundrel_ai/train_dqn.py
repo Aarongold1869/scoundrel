@@ -4,7 +4,7 @@ Train a DQN (Deep Q-Network) agent to play Scoundrel using Stable-Baselines3
 Requirements:
 pip install stable-baselines3[extra]
 """
-from scoundrel_ai.helpers import get_tensorboard_log_name
+from scoundrel_ai.helpers import get_tensorboard_log_dir
 from scoundrel_ai.deck_analysis.deck_analyzer import DeckAnalyzer
 from scoundrel_ai.wrappers import (
     ActionMaskingDQNWrapper, 
@@ -23,6 +23,7 @@ from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.callbacks import BaseCallback
+from sb3_contrib import QRDQN
 from sb3_contrib.common.wrappers import ActionMasker
 
 import argparse
@@ -49,6 +50,8 @@ def train_dqn(
     use_dfs_termination=False,
     dfs_max_states=50000,
     dfs_check_frequency=5,
+    use_qrdqn=False,
+    tensorboard_log_name="dqn"
 ):
     """Train a DQN agent on Scoundrel"""
     
@@ -103,7 +106,7 @@ def train_dqn(
     eval_env = VecNormalize(eval_env, norm_obs=True, norm_reward=False, clip_obs=10.0, training=False)
     
     # Generate tensorboard log directory name
-    tensorboard_log_dir = get_tensorboard_log_name("dqn", total_timesteps)
+    tensorboard_log_dir = get_tensorboard_log_dir(tensorboard_log_name, total_timesteps)
     print(f"Tensorboard logs will be saved to: {tensorboard_log_dir}")
     
     # Create callbacks
@@ -127,49 +130,38 @@ def train_dqn(
         callbacks.append(DeckCurriculumCallback(curriculum_schedule, total_timesteps))
     
     # Initialize the DQN agent with action masking
-    print("\nInitializing DQN agent with action masking...")
+    if use_qrdqn:
+        model_class = QRDQN
+        print('using QRDQN')
+        
+    else: 
+        if not disable_action_masking:
+            model_class = MaskedDQN
+            print('using MaskedDQN')
+        else: 
+            model_class = DQN
+            print('using DQN')
 
-    if not disable_action_masking:
-        model = MaskedDQN(
-            policy="MlpPolicy",
-            env=env,
-            learning_rate=1e-4,  # Lower learning rate for stability
-            buffer_size=200000,  # Larger buffer for more experience
-            learning_starts=1500,  # Start learning after 1000 steps for better data
-            batch_size=64,  # Reasonable batch size
-            tau=1.0,
-            gamma=0.99,  # Standard discount factor
-            train_freq=4,
-            gradient_steps=2,  # More gradient steps per update
-            target_update_interval=500,  # Update target network every 1000 steps
-            exploration_fraction=0.5,  # Explore for 50% of training
-            exploration_initial_eps=1.0,
-            exploration_final_eps=0.1,   # Low final exploration for fine-tuning
-            verbose=1,
-            tensorboard_log=tensorboard_log_dir,
-            policy_kwargs=dict(net_arch=[256, 256])  # Larger network for complex observations
-        )
-    
-    else:
-        model = DQN(
-            policy="MlpPolicy",
-            env=env,
-            learning_rate=1e-4,  # Lower learning rate for stability
-            buffer_size=200000,  # Larger buffer for more experience
-            learning_starts=1500,  # Start learning after 1000 steps for better data
-            batch_size=64,  # Reasonable batch size
-            tau=1.0,
-            gamma=0.99,  # Standard discount factor
-            train_freq=4,
-            gradient_steps=2,  # More gradient steps per update
-            target_update_interval=500,  # Update target network every 1000 steps
-            exploration_fraction=0.5,  # Explore for 50% of training
-            exploration_initial_eps=1.0,
-            exploration_final_eps=0.1,   # Low final exploration for fine-tuning
-            verbose=1,
-            tensorboard_log=tensorboard_log_dir,
-            policy_kwargs=dict(net_arch=[256, 256])  # Larger network for complex observations
-        )
+    model = model_class(
+        policy="MlpPolicy",
+        env=env,
+        learning_rate=1e-4,  # Lower learning rate for stability
+        buffer_size=200000,  # Larger buffer for more experience
+        learning_starts=1500,  # Start learning after 1000 steps for better data
+        batch_size=64,  # Reasonable batch size
+        tau=1.0,
+        gamma=0.99,  # Standard discount factor
+        train_freq=4,
+        gradient_steps=2,  # More gradient steps per update
+        target_update_interval=10000,  # Update target network every 1000 steps
+        exploration_fraction=0.3,  # Explore for 50% of training
+        exploration_initial_eps=1.0,
+        exploration_final_eps=0.02,   # Low final exploration for fine-tuning
+        verbose=0,
+        tensorboard_log=tensorboard_log_dir,
+        # n_steps=5,
+        policy_kwargs=dict(net_arch = [256, 256, 128])  # Larger network for complex observations
+    )
     
     # Train the agent
     print(f"\nTraining for {total_timesteps} timesteps...")
@@ -203,7 +195,8 @@ def evaluate_model(
         episodes=10, 
         disable_action_masking=False,
         gameplay_path=None, 
-        eval_deck_seed=None
+        eval_deck_seed=None,
+        use_qrdqn=False
         ):
     """Evaluate a trained model and save best gameplay replay"""
     # Detect algorithm and apply appropriate wrappers
@@ -246,23 +239,14 @@ def evaluate_model(
         print("Warning: No VecNormalize stats found, running without normalization")
     
     # Load the model - auto-detect algorithm
-    if not disable_action_masking:
-        model = MaskedDQN.load(model_path, env=env)
+    if use_qrdqn:
+        model = QRDQN.load(model_path, env=env)
     else:
-        model = DQN.load(model_path, env=env)
-    # elif is_ppo:
-    #     model = MaskablePPO.load(model_path, env=env)
-    # elif "a2c" in model_path.lower():
-    #     model = A2C.load(model_path, env=env)
-    # else:
-    #     # Try DQN by default
-    #     try:
-    #         model = MaskedDQN.load(model_path, env=env)
-    #     except:
-    #         pass
-    #     #     model = MaskablePPO.load(model_path, env=env)
+        if not disable_action_masking:
+            model = MaskedDQN.load(model_path, env=env)
+        else:
+            model = DQN.load(model_path, env=env)
 
-    # Try to read model name from model_name.txt file
     model_dir = os.path.dirname(model_path)
     model_name_file = os.path.join(model_dir, "model_name.txt")
     
@@ -401,10 +385,10 @@ def evaluate_model(
             "timestamp": datetime.now().isoformat()
         })
         
-        print(f"\nEpisode {episode + 1} Results:")
-        print(f"  Reward: {episode_reward:.2f}")
-        print(f"  Score: {info['score']}")
-        print(f"  HP: {info['player_state']['hp']}")
+        # print(f"\nEpisode {episode + 1} Results:")
+        # print(f"  Reward: {episode_reward:.2f}")
+        # print(f"  Score: {info['score']}")
+        # print(f"  HP: {info['player_state']['hp']}")
     
     print(f"\n{'='*60}")
     print(f"Evaluation Summary ({episodes} episodes):")
@@ -441,6 +425,10 @@ if __name__ == "__main__":
                         help="Path to model for evaluation")
     parser.add_argument("--episodes", type=int, default=10,
                         help="Number of episodes for evaluation")
+    parser.add_argument("--use-qrdqn", action="store_true",
+                        help="use qrdqn model")
+    # parser.add_argument("--use-drdqn", default="store_true",
+    #                     help="use drdqn model")
     parser.add_argument("--eval-deck-seed", type=int, default=None,
                         help="Seed for deterministic evaluation decks")
     parser.add_argument("--disable-action-masking", action="store_true",
@@ -469,6 +457,8 @@ if __name__ == "__main__":
                         help="Check winnability every N steps (1=every step)")
     parser.add_argument("--gameplay-path", type=str, default=None,
                         help="Path to gameplay.json for saving or replaying")
+    parser.add_argument("--tensorboard-log-name", type=str, default=None,
+                        help="Name of tensorboard log dir")
     
     args = parser.parse_args()
     early_terminate_threshold = None
@@ -497,6 +487,8 @@ if __name__ == "__main__":
                 use_dfs_termination=args.use_dfs_termination,
                 dfs_max_states=args.dfs_max_states,
                 dfs_check_frequency=args.dfs_check_frequency,
+                use_qrdqn=args.use_qrdqn,
+                tensorboard_log_name=args.tensorboard_log_name
             )
     elif args.mode == "eval":
         if args.model_path is None:
@@ -504,6 +496,7 @@ if __name__ == "__main__":
         else:
             evaluate_model(
                 args.model_path,
+                use_qrdqn=args.use_qrdqn,
                 disable_action_masking=args.disable_action_masking,
                 episodes=args.episodes,
                 gameplay_path=args.gameplay_path,

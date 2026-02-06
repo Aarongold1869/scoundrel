@@ -116,10 +116,14 @@ class DeckAnalyzer:
         total_monster_damage = sum(m.val for m in monsters)
         total_available_healing = sum(p.val for p in potions)
         total_weapon_coverage = sum(w.val for w in weapons)
-        
+        # total_monster_damage = self.dungeon.monster_strength_remaining
+        # total_available_healing = self.dungeon.potion_strength_remaining
+        # total_weapon_coverage = self.dungeon.weapon_strength_remaining
+
+
         # 1. Check if sufficient resources exist
-        if len(weapons) == 0:
-            critical_issues.append("No weapons in deck - impossible to win")
+        # if len(weapons) == 0:
+        #     critical_issues.append("No weapons in deck - impossible to win")
         
         # Note: Removed strict healing check since graduated scoring handles this
         # Decks with marginal healing are difficult but not impossible
